@@ -12,6 +12,6 @@ Route::get('/', function () {
 Route::resource('products', ProductController::class);
 
 Route::prefix('cart')->name('cart.')->group(function () {
-    Route::post('add{id}', [CartController::class, 'addItem'])->name('add');
+    Route::post('add/{id}', [CartController::class, 'addItem'])->name('add');
 });
 

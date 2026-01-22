@@ -6,8 +6,6 @@ import { show } from "@/actions/App/Http/Controllers/ProductController";
 import type { Product } from "@/types/product";
 
 const page = usePage()
-const cart = page.props.cart
-console.log(cart);
 defineProps<{products: Product[]}>()
 </script>
 
@@ -23,19 +21,19 @@ defineProps<{products: Product[]}>()
         </Link>
     </div>
 
-    <pre>{{ JSON.stringify(cart, null, 2) }}</pre>
+<!--    <pre>{{ JSON.stringify(page.props.cart, null, 2) }}</pre>-->
 
 
-<!--    &lt;!&ndash; Počet položiek &ndash;&gt;-->
-<!--    <span>Košík: {{ cart.items.length }}</span>-->
+    <!-- Počet položiek -->
+    <span>Košík: {{ page.props.cart.itemsCount }}</span>
 
-<!--    &lt;!&ndash; Zoznam položiek &ndash;&gt;-->
-<!--    <div v-for="item in cart.items" :key="item.cartId">-->
-<!--        <p>{{ item.cartName }}</p>-->
-<!--        <p>Množstvo: {{ item.cartQuantity }}</p>-->
-<!--        <p>Cena: {{ item.unitPrice }} €</p>-->
-<!--    </div>-->
+    <!-- Zoznam položiek -->
+    <div v-for="item in page.props.cart.items" :key="item.cartId">
+        <p>{{ item.name }}</p>
+        <p>Množstvo: {{ item.quantity }}</p>
+        <p>Cena: {{ item.unitPrice }} €</p>
+    </div>
 
-<!--    &lt;!&ndash; Celková suma &ndash;&gt;-->
-<!--    <p>Celkom: {{ cart.total }} €</p>-->
+    <!-- Celková suma -->
+    <p>Celkom: {{ page.props.cart.total }} €</p>
 </template>

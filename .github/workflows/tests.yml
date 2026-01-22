@@ -3,19 +3,19 @@ name: tests
 on:
   push:
     branches:
-      - develop
+#      - develop
       - main
-  pull_request:
-    branches:
-      - develop
-      - main
+#  pull_request:
+#    branches:
+#      - develop
+#      - main
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.4', '8.5']
+#    strategy:
+#      matrix:
+#        php-version: ['8.4', '8.5']
 
     steps:
       - name: Checkout code
@@ -24,7 +24,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+#          php-version: ${{/ matrix.php-version }}
+          php-version: 8.2
           tools: composer:v2
           coverage: xdebug
 

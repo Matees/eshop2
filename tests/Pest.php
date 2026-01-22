@@ -11,6 +11,8 @@
 |
 */
 
+use App\Models\Product;
+
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
@@ -41,7 +43,12 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function createProduct(array $attributes = []): Product
 {
-    // ..
+    return Product::factory()->create([
+        'name' => 'Test Product',
+        'price' => 25.00,
+        'tax_rate' => 20,
+        ...$attributes,
+    ]);
 }

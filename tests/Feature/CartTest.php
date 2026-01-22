@@ -1,7 +1,6 @@
 <?php
 
 use App\Cart\CartService;
-use App\Models\Product;
 
 beforeEach(function () {
     $this->cartService = app(CartService::class);
@@ -86,13 +85,3 @@ test('cart is empty', function () {
         ->and($cart['items'])->toBe([])
         ->and($cart['total'])->toBe(0.0);
 });
-
-function createProduct(array $attributes = []): Product
-{
-    return Product::factory()->create([
-        'name' => 'Test Product',
-        'price' => 25.00,
-        'tax_rate' => 20,
-        ...$attributes,
-    ]);
-}

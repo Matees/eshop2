@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class CartController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Add Product to cart.
      */
     public function addItem(int $itemId, Request $request, CartService $cartService)
     {

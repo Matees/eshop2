@@ -9,8 +9,10 @@ use Riesenia\Cart\CartItemInterface;
 
 class CartService {
 
+    private ?Cart $cart = null;
+
     public function addItem(CartItemInterface $item, int $quantity = 1): void {
-        $cart = $this->loadCart();
+        $cart = $this->getCart();
 
         $cart->addItem($item, $quantity);
 
@@ -21,14 +23,17 @@ class CartService {
         session(['cart' => serialize($cart)]);
     }
 
-    public function loadCart(): Cart {
-        $data = session('cart');
+    public function getCart(): Cart {
+        if ($this->cart === null) {
+            $data = session('cart');
+            $this->cart = $data ? unserialize($data) : new Cart();
+        }
 
-        return $data ? unserialize($data) : new Cart();
+        return $this->cart;
     }
 
     public function toArray(): array {
-        $cart = $this->loadCart();
+        $cart = $this->getCart();
 
         return [
             'items' => array_map(fn(CartItemInterface $item) => [
@@ -38,7 +43,7 @@ class CartService {
                 'unitPrice' => $item->getUnitPrice(),
                 'taxRate' => $item->getTaxRate(),
             ], $cart->getItems()),
-            'total' => (string) $cart->getTotal(),
+            'total' => $cart->getTotal()->asFloat(),
             'itemCount' => $cart->countItems(),
         ];
     }

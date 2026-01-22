@@ -5,10 +5,10 @@ import { ref } from 'vue';
 
 import { addItem } from "@/actions/App/Http/Controllers/CartController";
 import { show } from "@/actions/App/Http/Controllers/ProductController";
-import type { Product } from "@/types/product";
+import type { Product, CursorPaginated } from "@/types/product";
 
 const page = usePage()
-const props = defineProps<{products: Product[]}>()
+const props = defineProps<{products: CursorPaginated<Product>}>()
 
 const dialog = ref<HTMLDialogElement>()
 const dialogMessage = ref('')
@@ -21,7 +21,7 @@ const showDialog = (message: string) => {
 // Form pre každý produkt
 type CartForm = ReturnType<typeof useForm<{ quantity: number }>>
 const forms: Record<number, CartForm> = {}
-props.products.forEach(p => {
+props.products.data.forEach(p => {
     forms[p.id] = useForm(addItem(p.id).method, addItem(p.id).url, {
         quantity: 1,
     })
@@ -39,7 +39,7 @@ const addToCart = (productId: number) => {
 </script>
 
 <template>
-    <div v-for="product in products" :key="product.id">
+    <div v-for="product in products.data" :key="product.id">
         <img :src="product.image" />
         <Link :href="show(product.id)">
             {{ product.name }}
@@ -58,6 +58,23 @@ const addToCart = (productId: number) => {
         <span v-if="forms[product.id].invalid('quantity')">
             {{ forms[product.id].errors.quantity }}
         </span>
+    </div>
+
+    <div>
+        <Link
+            v-if="products.prev_page_url"
+            :href="products.prev_page_url"
+            preserve-scroll
+        >
+            ← Predchádzajúca
+        </Link>
+        <Link
+            v-if="products.next_page_url"
+            :href="products.next_page_url"
+            preserve-scroll
+        >
+            Ďalšia →
+        </Link>
     </div>
 
     <!-- Počet položiek -->

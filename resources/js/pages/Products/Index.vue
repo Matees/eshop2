@@ -1,28 +1,64 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
+import { useForm } from 'laravel-precognition-vue';
+import { ref } from 'vue';
 
 import { addItem } from "@/actions/App/Http/Controllers/CartController";
 import { show } from "@/actions/App/Http/Controllers/ProductController";
 import type { Product } from "@/types/product";
 
 const page = usePage()
-defineProps<{products: Product[]}>()
+const props = defineProps<{products: Product[]}>()
+
+const dialog = ref<HTMLDialogElement>()
+const dialogMessage = ref('')
+
+const showDialog = (message: string) => {
+    dialogMessage.value = message
+    dialog.value?.showModal()
+}
+
+// Form pre každý produkt
+type CartForm = ReturnType<typeof useForm<{ quantity: number }>>
+const forms: Record<number, CartForm> = {}
+props.products.forEach(p => {
+    forms[p.id] = useForm(addItem(p.id).method, addItem(p.id).url, {
+        quantity: 1,
+    })
+})
+
+const addToCart = (productId: number) => {
+    router.post(addItem(productId).url, {
+        quantity: forms[productId].quantity
+    }, {
+        preserveScroll: true,
+        onSuccess: () => showDialog('Pridané do košíka!'),
+        onError: () => showDialog('Chyba pri pridávaní do košíka')
+    })
+}
 </script>
 
 <template>
     <div v-for="product in products" :key="product.id">
+        <img :src="product.image" />
         <Link :href="show(product.id)">
             {{ product.name }}
         </Link>
         <p>{{ product.description }}</p>
 
-        <Link :href="addItem(product.id)">
-            Pridat do kosika
-        </Link>
+        <input
+            type="number"
+            v-model.number="forms[product.id].quantity"
+            min="1"
+            @change="forms[product.id].validate('quantity')"
+        />
+        <button @click="addToCart(product.id)" :disabled="forms[product.id].processing">
+            Pridať do košíka
+        </button>
+        <span v-if="forms[product.id].invalid('quantity')">
+            {{ forms[product.id].errors.quantity }}
+        </span>
     </div>
-
-<!--    <pre>{{ JSON.stringify(page.props.cart, null, 2) }}</pre>-->
-
 
     <!-- Počet položiek -->
     <span>Košík: {{ page.props.cart.itemsCount }}</span>
@@ -32,8 +68,15 @@ defineProps<{products: Product[]}>()
         <p>{{ item.name }}</p>
         <p>Množstvo: {{ item.quantity }}</p>
         <p>Cena: {{ item.unitPrice }} €</p>
+        --------------------------------------
     </div>
 
     <!-- Celková suma -->
     <p>Celkom: {{ page.props.cart.total }} €</p>
+
+    <!-- Dialog -->
+    <dialog ref="dialog">
+        <p>{{ dialogMessage }}</p>
+        <button @click="dialog?.close()">OK</button>
+    </dialog>
 </template>

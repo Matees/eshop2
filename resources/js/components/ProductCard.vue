@@ -5,6 +5,7 @@ import { inject } from 'vue';
 
 import { addItem } from "@/actions/App/Http/Controllers/CartController";
 import { show } from "@/actions/App/Http/Controllers/ProductController";
+import CartIcon from '@/components/CartIcon.vue';
 import type { Product } from "@/types/product";
 
 const props = withDefaults(defineProps<{
@@ -48,6 +49,8 @@ const addToCart = () => {
             <span>Cena s DPH: </span>
             <strong>{{ product.price * (1 + product.tax_rate / 100) }} €</strong>
         </p>
+
+        <cart-icon :product-id="product.id"></cart-icon>
 
         <div v-if="withInput" class="product-actions">
             <input

@@ -2,6 +2,8 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, provide } from 'vue';
 
+import CartIcon from '@/components/CartIcon.vue';
+
 const page = usePage()
 
 const dialog = ref<HTMLDialogElement>()
@@ -16,23 +18,14 @@ provide('showDialog', showDialog)
 </script>
 
 <template>
-    <div class="app-layout">
-        <header class="header">
-            <nav class="nav">
-                <Link href="/products" class="nav-brand">
+    <div class="app-layout min-h-screen">
+        <header class="sticky top-0 z-50 bg-amber-200gi shadow-sm">
+            <nav class="flex items-center justify-between px-6 py-4">
+                <Link href="/products" class="text-xl font-bold text-gray-800 hover:text-gray-600">
                     {{ page.props.name }}
                 </Link>
 
-                <Link href="/cart" class="cart-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9" cy="21" r="1"/>
-                        <circle cx="20" cy="21" r="1"/>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                    </svg>
-                    <span v-if="page.props.cart.itemCount > 0" class="cart-badge">
-                        {{ page.props.cart.itemCount }}
-                    </span>
-                </Link>
+                <CartIcon class="mr-2 mt-1" />
             </nav>
         </header>
 

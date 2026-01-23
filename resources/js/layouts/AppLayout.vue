@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { ref, provide } from 'vue';
 
 import CartIcon from '@/components/CartIcon.vue';
+import { home } from '@/routes'
 
 const page = usePage()
 
@@ -21,7 +22,7 @@ provide('showDialog', showDialog)
     <div class="app-layout min-h-screen">
         <header class="sticky top-0 z-50 bg-amber-200gi shadow-sm">
             <nav class="flex items-center justify-between px-6 py-4">
-                <Link href="/products" class="text-xl font-bold text-gray-800 hover:text-gray-600">
+                <Link :href="home()" class="text-xl font-bold text-gray-800 hover:text-gray-600">
                     {{ page.props.name }}
                 </Link>
 

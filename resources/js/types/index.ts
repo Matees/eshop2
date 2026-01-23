@@ -3,11 +3,13 @@ export * from './auth';
 import type { Auth } from './auth';
 
 export interface CartItem {
-    cartId: string;
+    id: string;
     name: string;
     quantity: number;
     unitPrice: number;
     taxRate: number;
+    total: number;
+    subTotal: number;
 }
 
 export interface Cart {

@@ -20,6 +20,15 @@ class CartService
         $this->saveCart($cart);
     }
 
+    public function removeItem(string $itemId): void
+    {
+        $cart = $this->getCart();
+
+        $cart->removeItem($itemId);
+
+        $this->saveCart($cart);
+    }
+
     private function saveCart(Cart $cart): void
     {
         session(['cart' => serialize($cart)]);
@@ -46,6 +55,8 @@ class CartService
                 'quantity' => $item->getCartQuantity(),
                 'unitPrice' => $item->getUnitPrice(),
                 'taxRate' => $item->getTaxRate(),
+                'total' => $cart->getItemPrice($item, $item->getCartQuantity(), true)->asFloat(),
+                'subTotal' => $cart->getItemPrice($item, $item->getCartQuantity(), false)->asFloat(),
             ], $cart->getItems()),
             'total' => $cart->getTotal()->asFloat(),
             'subTotal' => $cart->getSubtotal()->asFloat(),

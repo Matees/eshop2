@@ -18,12 +18,24 @@ class CartController extends Controller
     /**
      * Add Product to cart.
      */
-    public function addItem(int $itemId, AddItemPostRequest $request, CartService $cartService)
+    public function add(int $itemId, AddItemPostRequest $request, CartService $cartService)
     {
         $product = Product::query()->findOrFail($itemId);
         $quantity = $request->integer('quantity', 1);
 
         $cartService->addItem(CartItem::createFromProduct($product), $quantity);
+
+        return redirect()->back();
+    }
+
+    /**
+     * Remove Product from cart.
+     */
+    public function remove(int $itemId, CartService $cartService)
+    {
+        Product::query()->findOrFail($itemId);
+
+        $cartService->removeItem((string) $itemId);
 
         return redirect()->back();
     }

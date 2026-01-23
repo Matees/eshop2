@@ -3,19 +3,19 @@ import { router } from '@inertiajs/vue3';
 import { useForm } from 'laravel-precognition-vue';
 import { inject } from 'vue';
 
-import { addItem } from "@/actions/App/Http/Controllers/CartController";
+import { add } from "@/actions/App/Http/Controllers/CartController";
 import type { Product } from "@/types/product";
 
 const props = defineProps<{product: Product}>()
 
 const showDialog = inject<(message: string) => void>('showDialog')
 
-const form = useForm(addItem(props.product.id).method, addItem(props.product.id).url, {
+const form = useForm(add(props.product.id).method, add(props.product.id).url, {
     quantity: 1,
 })
 
 const addToCart = () => {
-    router.post(addItem(props.product.id).url, {
+    router.post(add(props.product.id).url, {
         quantity: form.quantity
     }, {
         preserveScroll: true,

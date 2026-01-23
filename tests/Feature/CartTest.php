@@ -54,7 +54,7 @@ test('can add multiple items', function (int $quantity) {
 
     $product2 = createProduct();
 
-    $this->post('cart/add/'.$product2->id, [
+    $this->post(route('cart.add', $product2->id), [
         'quantity' => $quantity,
     ]);
 
@@ -79,6 +79,14 @@ test('can add item without quantity', function () {
 });
 
 test('cart is empty', function () {
+    $cart = $this->cartService->toArray();
+
+    expect($cart['itemCount'])->toBe(0)
+        ->and($cart['items'])->toBe([])
+        ->and($cart['total'])->toBe(0.0);
+});
+
+test('can remove item from cart', function () {
     $cart = $this->cartService->toArray();
 
     expect($cart['itemCount'])->toBe(0)

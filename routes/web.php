@@ -12,5 +12,6 @@ Route::resource('products', ProductController::class);
 
 Route::prefix('cart')->name('cart.')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('index');
-    Route::post('add/{id}', [CartController::class, 'addItem'])->name('add')->middleware([HandlePrecognitiveRequests::class]);
+    Route::post('{id}', [CartController::class, 'add'])->name('add')->middleware([HandlePrecognitiveRequests::class]);
+    Route::delete('{id}', [CartController::class, 'remove'])->name('remove');
 });

@@ -20,7 +20,7 @@ class AddItemPostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => ['required', 'integer', 'min:1', 'max:5'],
+            'quantity' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

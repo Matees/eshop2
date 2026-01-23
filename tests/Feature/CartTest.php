@@ -40,7 +40,7 @@ test('can increase count of existing item', function (int $quantity) {
 })->with([1, 2, 5, 10]);
 
 test('cannot add non-existing product', function () {
-    $response = $this->post('cart/add/1111');
+    $response = $this->post('cart/add/0');
 
     $response->assertNotFound();
 });

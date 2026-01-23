@@ -1,24 +1,41 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref, provide } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 import CartIcon from '@/components/CartIcon.vue';
+import Toast from '@/components/Toast.vue';
 import { home } from '@/routes'
 
 const page = usePage()
 
-const dialog = ref<HTMLDialogElement>()
-const dialogMessage = ref('')
+const showFlash = ref(true)
 
-const showDialog = (message: string) => {
-    dialogMessage.value = message
-    dialog.value?.showModal()
-}
+const flash = computed(() => {
+    if (page.props.flash?.error) {
+        return { message: page.props.flash.error, type: 'error' as const }
+    }
+    if (page.props.flash?.success) {
+        return { message: page.props.flash.success, type: 'success' as const }
+    }
+    if (page.props.flash?.warning) {
+        return { message: page.props.flash.warning, type: 'warning' as const }
+    }
+    return null
+})
 
-provide('showDialog', showDialog)
+watch(flash, () => {
+    showFlash.value = true
+})
 </script>
 
 <template>
+    <Toast
+        v-if="flash && showFlash"
+        :message="flash.message"
+        :type="flash.type"
+        @close="showFlash = false"
+    />
+
     <div class="app-layout min-h-screen">
         <header class="sticky top-0 z-50 bg-amber-200gi shadow-sm">
             <nav class="flex items-center justify-between px-6 py-4">
@@ -33,10 +50,5 @@ provide('showDialog', showDialog)
         <main class="main-content">
             <slot />
         </main>
-
-        <dialog ref="dialog">
-            <p>{{ dialogMessage }}</p>
-            <button @click="dialog?.close()">OK</button>
-        </dialog>
     </div>
 </template>

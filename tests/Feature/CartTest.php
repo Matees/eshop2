@@ -40,7 +40,7 @@ test('can increase count of existing item', function (int $quantity) {
 })->with([1, 2, 5, 10]);
 
 test('cannot add non-existing product', function () {
-    $response = $this->post('cart/add/0');
+    $response = $this->post(route('cart.add', 0));
 
     $response->assertNotFound();
 });
@@ -86,10 +86,47 @@ test('cart is empty', function () {
         ->and($cart['total'])->toBe(0.0);
 });
 
+test('cannot add item with zero quantity', function (int $quantity) {
+    $product = createProduct();
+
+    $response = $this->post(route('cart.add', $product->id), [
+        'quantity' => $quantity,
+    ]);
+
+    $response->assertSessionHasErrors('quantity');
+})->with([-1, 0]);
+
 test('can remove item from cart', function () {
+    $product = createProduct();
+
+    $this->post(route('cart.add', $product->id));
+    $this->delete(route('cart.remove', $product->id));
+
     $cart = $this->cartService->toArray();
 
-    expect($cart['itemCount'])->toBe(0)
-        ->and($cart['items'])->toBe([])
-        ->and($cart['total'])->toBe(0.0);
+    expect($cart['itemCount'])->toBe(0);
+});
+
+test('cannot remove item that is not in cart', function () {
+    $product = createProduct();
+
+    $response = $this->delete(route('cart.remove', $product->id));
+
+    $response->assertSessionHas('warning');
+    expect($this->cartService->toArray()['itemCount'])->toBe(0);
+});
+
+// Čiastočné odstránenie (ak podporuješ)
+test('removing one item keeps others', function () {
+    $product1 = createProduct();
+    $product2 = createProduct();
+
+    $this->post(route('cart.add', $product1->id), ['quantity' => 1]);
+    $this->post(route('cart.add', $product2->id), ['quantity' => 1]);
+    $this->delete(route('cart.remove', $product1->id));
+
+    $cart = $this->cartService->toArray();
+
+    expect($cart['itemCount'])->toBe(1)
+        ->and($cart['items'][$product2->id])->not->toBeNull();
 });

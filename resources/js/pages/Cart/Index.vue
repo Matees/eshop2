@@ -34,7 +34,7 @@ const page = usePage();
                             <strong>{{ item.total }} €</strong>
                         </p>
                     </div>
-                    <Link :href="remove(item.id)"> Odstranit </Link>
+                    <Link :href="remove(111)"> Odstranit </Link>
                 </div>
             </div>
 

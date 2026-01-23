@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Cart\CartService;
+use App\Enums\FlashType;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,11 +39,16 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'cart' => fn() => app(CartService::class)->toArray(),
-            'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'cart' => fn () => app(CartService::class)->toArray(),
+            'flash' => [
+                FlashType::Success->value => fn () => $request->session()->get(FlashType::Success->value),
+                FlashType::Error->value => fn () => $request->session()->get(FlashType::Error->value),
+                FlashType::Warning->value => fn () => $request->session()->get(FlashType::Warning->value),
+            ],
+            'name' => config('app.name'),
         ];
     }
 }

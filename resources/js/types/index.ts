@@ -19,9 +19,16 @@ export interface Cart {
     subTotal: number;
 }
 
+export interface Flash {
+    success: string | null;
+    error: string | null;
+    warning: string | null;
+}
+
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
-    name: string;
     auth: Auth;
     cart: Cart;
+    flash: Flash;
+    name: string;
     [key: string]: unknown;
 };

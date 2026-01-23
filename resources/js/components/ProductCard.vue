@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { useForm } from 'laravel-precognition-vue';
-import { inject } from 'vue';
 
 import { add } from "@/actions/App/Http/Controllers/CartController";
 import { show } from "@/actions/App/Http/Controllers/ProductController";
@@ -15,8 +14,6 @@ const props = withDefaults(defineProps<{
     withInput: true
 })
 
-const showDialog = inject<(message: string) => void>('showDialog')
-
 const form = useForm(add(props.product.id).method, add(props.product.id).url, {
     quantity: 1,
 })
@@ -26,8 +23,6 @@ const addToCart = () => {
         quantity: form.quantity
     }, {
         preserveScroll: true,
-        onSuccess: () => showDialog?.('Pridané do košíka!'),
-        onError: () => showDialog?.('Chyba pri pridávaní do košíka')
     })
 }
 </script>

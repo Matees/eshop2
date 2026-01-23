@@ -20,13 +20,18 @@ class CartService
         $this->saveCart($cart);
     }
 
-    public function removeItem(string $itemId): void
+    public function removeItem(string $itemId): bool
     {
         $cart = $this->getCart();
 
-        $cart->removeItem($itemId);
+        try {
+            $cart->removeItem($itemId);
+        } catch (\OutOfBoundsException $e) {
+            return false;
+        }
 
         $this->saveCart($cart);
+        return true;
     }
 
     private function saveCart(Cart $cart): void

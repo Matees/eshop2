@@ -6,9 +6,15 @@ use App\Cart\CartItem;
 use App\Cart\CartService;
 use App\Http\Requests\AddItemPostRequest;
 use App\Models\Product;
+use Inertia\Inertia;
 
 class CartController extends Controller
 {
+    public function index()
+    {
+        return Inertia::render('Cart/Index');
+    }
+
     /**
      * Add Product to cart.
      */

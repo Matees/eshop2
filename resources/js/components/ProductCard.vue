@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { useForm } from 'laravel-precognition-vue';
 import { inject } from 'vue';
 
 import { addItem } from "@/actions/App/Http/Controllers/CartController";
+import { show } from "@/actions/App/Http/Controllers/ProductController";
 import type { Product } from "@/types/product";
 
-const props = defineProps<{product: Product}>()
+const props = withDefaults(defineProps<{
+    product: Product
+    withInput?: boolean
+}>(), {
+    withInput: true
+})
 
 const showDialog = inject<(message: string) => void>('showDialog')
 
@@ -26,13 +32,24 @@ const addToCart = () => {
 </script>
 
 <template>
-    <div class="product-detail">
+    <div class="product-card">
         <img :src="product.image" :alt="product.name" class="product-image" />
-        <h1>{{ product.name }}</h1>
-        <p class="product-description">{{ product.description }}</p>
-        <p class="product-price">{{ product.price }} €</p>
 
-        <div class="product-actions">
+        <Link :href="show(product.id)" class="product-name">
+            {{ product.name }}
+        </Link>
+
+        <p class="product-description">{{ product.description }}</p>
+        <p class="subtotal-price">
+            <span>Cena bez DPH: </span>
+            <strong>{{ product.price }} €</strong>
+        </p>
+        <p class="total-price">
+            <span>Cena s DPH: </span>
+            <strong>{{ product.price * (1 + product.tax_rate / 100) }} €</strong>
+        </p>
+
+        <div v-if="withInput" class="product-actions">
             <input
                 type="number"
                 v-model.number="form.quantity"
@@ -49,7 +66,7 @@ const addToCart = () => {
             </button>
         </div>
 
-        <span v-if="form.invalid('quantity')" class="error">
+        <span v-if="withInput && form.invalid('quantity')" class="error">
             {{ form.errors.quantity }}
         </span>
     </div>

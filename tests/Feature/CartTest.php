@@ -107,7 +107,7 @@ test('can remove item from cart', function () {
     expect($cart['itemCount'])->toBe(0);
 });
 
-test('cannot remove item that is not in cart', function () {
+test('cannotnet remove item that is not in cart', function () {
     $product = createProduct();
 
     $response = $this->delete(route('cart.remove', $product->id));

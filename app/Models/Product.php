@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property-read int $id
@@ -18,4 +19,9 @@ class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    public function orders(): BelongsToMany
+    {
+        return $this->belongsToMany(Order::class)->using(OrderItems::class);
+    }
 }

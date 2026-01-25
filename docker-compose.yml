@@ -4,9 +4,11 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - /var/www/html/node_modules
     ports:
       - "8000:8000"
-    command: php artisan serve --host=0.0.0.0
+      - "5173:5173"
+    command: composer run dev
     depends_on:
       - db
 

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'swiftyper' => [
+        'api_key' => env('SWIFTTYPER_TOKEN'),
+
+    ],
 ];

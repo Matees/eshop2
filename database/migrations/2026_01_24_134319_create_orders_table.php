@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('promo_code_id')->nullable()->constrained('promo_codes')->nullOnDelete();
 
             $table->string('status');
+
             $table->string('email');
             $table->string('phone')->nullable();
 

@@ -3,7 +3,6 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 import { remove } from '@/actions/App/Http/Controllers/CartController';
 import { home } from '@/routes';
-import { log } from 'eslint-import-resolver-typescript/lib/logger';
 
 const page = usePage();
 </script>

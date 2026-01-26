@@ -21,5 +21,6 @@ Route::resource('orders', OrderController::class);
 Route::prefix('api/address')->name('address.')->group(function () {
     Route::get('cities', [AddressController::class, 'cities'])->name('cities');
     Route::get('streets', [AddressController::class, 'streets'])->name('streets');
+    Route::get('addresses', [AddressController::class, 'addresses'])->name('addresses');
     Route::get('postcode', [AddressController::class, 'postcode'])->name('postcode');
 });

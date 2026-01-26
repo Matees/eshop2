@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
+import { ref, watch } from 'vue'
 
 import { store } from '@/actions/App/Http/Controllers/OrderController'
 
 interface City {
     name: string
     placeId: string
-    postcode: string | null
+    postcode: string
     display_name: string
 }
 
 interface Street {
     name: string
-    postcode: string | null
+    postcode: string
+}
+
+interface Address {
+    streetNumber: string
+    postcode: string
 }
 
 const form = useForm({
@@ -21,27 +26,28 @@ const form = useForm({
     phone: '',
     city: '',
     street: '',
+    houseNumber: '',
     zip: '',
 })
 
 const cityQuery = ref('')
 const streetQuery = ref('')
+const houseNumberQuery = ref('')
 const cities = ref<City[]>([])
 const streets = ref<Street[]>([])
+const addresses = ref<Address[]>([])
 const showCityDropdown = ref(false)
 const showStreetDropdown = ref(false)
+const showAddressDropdown = ref(false)
 const loadingCities = ref(false)
 const loadingStreets = ref(false)
+const loadingAddresses = ref(false)
 
 let cityDebounce: ReturnType<typeof setTimeout> | null = null
 let streetDebounce: ReturnType<typeof setTimeout> | null = null
+let addressDebounce: ReturnType<typeof setTimeout> | null = null
 
 const searchCities = async (query: string) => {
-    if (query.length < 2) {
-        cities.value = []
-        return
-    }
-
     loadingCities.value = true
 
     try {
@@ -82,19 +88,25 @@ const searchStreets = async (query: string) => {
     }
 }
 
-const fetchPostcode = async () => {
-    if (!form.city) return
+const searchAddresses = async (query: string) => {
+    if (!form.city || !form.street) {
+        addresses.value = []
+        return
+    }
+
+    loadingAddresses.value = true
 
     try {
         const response = await fetch(
-            `/api/address/postcode?city=${encodeURIComponent(form.city)}&street=${encodeURIComponent(form.street)}`
+            `/api/address/addresses?q=${encodeURIComponent(query)}&street=${encodeURIComponent(form.street)}&municipality=${encodeURIComponent(form.city)}`
         )
-        const data = await response.json()
-        if (data.postcode) {
-            form.zip = data.postcode
-        }
+        addresses.value = await response.json()
+        showAddressDropdown.value = addresses.value.length > 0
     } catch (error) {
-        console.error('Error fetching postcode:', error)
+        console.error('Error fetching addresses:', error)
+        addresses.value = []
+    } finally {
+        loadingAddresses.value = false
     }
 }
 
@@ -103,13 +115,15 @@ const selectCity = (city: City) => {
     cityQuery.value = city.name
     showCityDropdown.value = false
 
-    if (city.postcode) {
-        form.zip = city.postcode
-    }
+    form.zip = city.postcode
 
     form.street = ''
     streetQuery.value = ''
     streets.value = []
+
+    form.houseNumber = ''
+    houseNumberQuery.value = ''
+    addresses.value = []
 }
 
 const selectStreet = (street: Street) => {
@@ -117,20 +131,28 @@ const selectStreet = (street: Street) => {
     streetQuery.value = street.name
     showStreetDropdown.value = false
 
-    if (street.postcode) {
+    form.houseNumber = ''
+    houseNumberQuery.value = ''
+    addresses.value = []
+
         form.zip = street.postcode
-    } else {
-        fetchPostcode()
-    }
+}
+
+const selectAddress = (address: Address) => {
+    form.houseNumber = address.streetNumber
+    houseNumberQuery.value = address.streetNumber
+    showAddressDropdown.value = false
 }
 
 watch(cityQuery, (newValue) => {
     if (cityDebounce) clearTimeout(cityDebounce)
 
-    if (newValue !== form.city) {
-        form.city = ''
-        form.zip = ''
+    if (newValue === form.city) {
+        return
     }
+
+    form.city = ''
+    form.zip = ''
 
     cityDebounce = setTimeout(() => {
         searchCities(newValue)
@@ -140,12 +162,28 @@ watch(cityQuery, (newValue) => {
 watch(streetQuery, (newValue) => {
     if (streetDebounce) clearTimeout(streetDebounce)
 
-    if (newValue !== form.street) {
-        form.street = newValue
+    if (newValue === form.street) {
+        return
     }
+
+    form.street = newValue
 
     streetDebounce = setTimeout(() => {
         searchStreets(newValue)
+    }, 300)
+})
+
+watch(houseNumberQuery, (newValue) => {
+    if (addressDebounce) clearTimeout(addressDebounce)
+
+    if (newValue === form.houseNumber) {
+        return
+    }
+
+    form.houseNumber = newValue
+
+    addressDebounce = setTimeout(() => {
+        searchAddresses(newValue)
     }, 300)
 })
 
@@ -243,6 +281,33 @@ const submit = () => {
                     <span v-if="form.errors.street" class="error">{{ form.errors.street }}</span>
                 </div>
 
+                <div class="form-group autocomplete">
+                    <label for="houseNumber">Číslo domu *</label>
+                    <input
+                        id="houseNumber"
+                        v-model="houseNumberQuery"
+                        type="text"
+                        required
+                        placeholder="Zadajte číslo domu"
+                        autocomplete="off"
+                        :disabled="!form.street"
+                        @focus="showAddressDropdown = addresses.length > 0"
+                        @blur="showAddressDropdown = false"
+                    />
+                    <div v-if="loadingAddresses" class="loading">Hladam...</div>
+                    <ul v-if="showAddressDropdown && addresses.length > 0" class="dropdown">
+                        <li
+                            v-for="address in addresses"
+                            :key="address.streetNumber"
+                            @mousedown="selectAddress(address)"
+                        >
+                            {{ address.streetNumber }}
+                            <span v-if="address.postcode" class="postcode">({{ address.postcode }})</span>
+                        </li>
+                    </ul>
+                    <span v-if="form.errors.houseNumber" class="error">{{ form.errors.houseNumber }}</span>
+                </div>
+
                 <div class="form-group">
                     <label for="zip">PSC *</label>
                     <input
@@ -322,6 +387,7 @@ const submit = () => {
 
 .form-group input.auto-filled {
     background-color: #e8f5e9;
+    color: #333;
 }
 
 .autocomplete {

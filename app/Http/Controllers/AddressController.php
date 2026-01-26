@@ -9,24 +9,18 @@ use Illuminate\Support\Facades\Http;
 
 class AddressController extends Controller
 {
-    private const SWIFTTYPER_MUNICIPALITY_URL = 'https://api.swiftyper.sk/v1/places/municipality';
-
     private const SWIFTTYPER_QUERY_URL = 'https://api.swiftyper.sk/v1/places/query';
 
     public function cities(Request $request): JsonResponse
     {
         $query = $request->get('q', '');
 
-        if (strlen($query) < 2) {
-            return response()->json([]);
-        }
-
         $cacheKey = 'cities_'.md5($query);
 
         $cities = Cache::remember($cacheKey, 0, function () use ($query) {
             $response = Http::withHeaders([
                 'X-Swiftyper-API-Key' => config('services.swiftyper.api_key'),
-            ])->post(self::SWIFTTYPER_MUNICIPALITY_URL, [
+            ])->post(self::SWIFTTYPER_QUERY_URL, [
                 'query' => $query,
                 'country' => ['SK'],
             ]);
@@ -43,6 +37,7 @@ class AddressController extends Controller
                     return [
                         'name' => $name,
                         'placeId' => $item['place_id'],
+                        'postalCode' => $item['postal_code'],
                         'lat' => $item['latlng']['lat'],
                         'lon' => $item['latlng']['lng'],
                     ];
@@ -62,7 +57,7 @@ class AddressController extends Controller
         $query = $request->get('q', '');
         $municipality = $request->get('municipality', '');
 
-        if (strlen($query) < 2 || strlen($municipality) < 2) {
+        if ($municipality === '') {
             return response()->json([]);
         }
 
@@ -91,43 +86,51 @@ class AddressController extends Controller
         return response()->json($streets);
     }
 
-    public function postcode(Request $request): JsonResponse
+    public function addresses(Request $request): JsonResponse
     {
-        $city = $request->get('city', '');
+        $query = $request->get('q', '');
         $street = $request->get('street', '');
+        $municipality = $request->get('municipality', '');
 
-        if (strlen($city) < 2) {
-            return response()->json(['postcode' => null]);
+        if (strlen($municipality) < 2 || strlen($street) < 1) {
+            return response()->json([]);
         }
 
-        $cacheKey = 'postcode_'.md5($city.'_'.$street);
+        $searchQuery = $query ? "$street $query" : $street;
+        $cacheKey = 'addresses_'.md5($searchQuery.'_'.$municipality);
 
-        $postcode = Cache::remember($cacheKey, 3600, function () use ($city, $street) {
-            $searchQuery = $street ? "$street, $city, Slovakia" : "$city, Slovakia";
-
+        $addresses = Cache::remember($cacheKey, 0, function () use ($searchQuery, $municipality) {
             $response = Http::withHeaders([
-                'User-Agent' => 'Eshop/1.0',
-            ])->get(self::NOMINATIM_URL, [
-                'q' => $searchQuery,
-                'format' => 'json',
-                'addressdetails' => 1,
-                'countrycodes' => 'sk',
-                'limit' => 1,
+                'X-Swiftyper-API-Key' => config('services.swiftyper.api_key'),
+            ])->post(self::SWIFTTYPER_QUERY_URL, [
+                'query' => $searchQuery,
+                'municipality' => $municipality,
+                'country' => ['SK'],
+                'limit' => 15,
             ]);
 
             if (! $response->successful()) {
-                return null;
+                return [];
             }
 
-            $data = $response->json();
+            return collect($response->json())
+                ->filter(fn ($item) => isset($item['street']) && (isset($item['street_number']) || isset($item['building_number'])))
+                ->map(function ($item) {
+                    $number = $item['building_number'] ?? $item['street_number'] ?? '';
+                    if (isset($item['building_number']) && isset($item['street_number'])) {
+                        $number = $item['street_number'].'/'.$item['building_number'];
+                    }
 
-            if (empty($data)) {
-                return null;
-            }
-
-            return $data[0]['address']['postcode'] ?? null;
+                    return [
+                        'streetNumber' => $number,
+                        'postalCode' => $item['postal_code'] ?? null,
+                        'placeId' => $item['place_id'] ?? null,
+                    ];
+                })
+                ->unique('streetNumber')
+                ->values();
         });
 
-        return response()->json(['postcode' => $postcode]);
+        return response()->json($addresses);
     }
 }

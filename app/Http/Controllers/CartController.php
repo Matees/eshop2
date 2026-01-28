@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Cart\CartItem;
 use App\Cart\CartService;
 use App\Enums\FlashType;
-use App\Http\Requests\AddItemPostRequest;
+use App\Http\Requests\StoreCartItemRequest;
 use App\Models\Product;
 use Inertia\Inertia;
 
@@ -19,7 +19,7 @@ class CartController extends Controller
     /**
      * Add Product to cart.
      */
-    public function add(int $itemId, AddItemPostRequest $request, CartService $cartService)
+    public function add(int $itemId, StoreCartItemRequest $request, CartService $cartService)
     {
         $product = Product::query()->findOrFail($itemId);
         $quantity = $request->integer('quantity', 1);

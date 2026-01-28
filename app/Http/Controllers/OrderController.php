@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreOrderRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -26,9 +27,12 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreOrderRequest $storeOrderRequest)
     {
-        //
+        $validated = $storeOrderRequest->validated();
+
+
+        return redirect()->back();
     }
 
     /**

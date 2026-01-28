@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 
 import { remove } from '@/actions/App/Http/Controllers/CartController';
+import { create as createOrder } from '@/actions/App/Http/Controllers/OrderController';
 import { home } from '@/routes';
 
 const page = usePage();
@@ -51,7 +52,7 @@ const page = usePage();
 
                 <div class="cart-actions">
                     <Link :href="home()" class="continue-shopping"> Pokračovať v nákupe </Link>
-                    <button class="checkout-btn">Objednať</button>
+                    <Link :href="createOrder()">Objednat </Link>
                 </div>
             </div>
         </div>

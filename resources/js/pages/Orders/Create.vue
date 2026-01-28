@@ -28,7 +28,7 @@ const form = useForm({
     street: '',
     houseNumber: '',
     zip: '',
-})
+}).withPrecognition(store())
 
 const cityQuery = ref('')
 const streetQuery = ref('')
@@ -188,7 +188,7 @@ watch(houseNumberQuery, (newValue) => {
 })
 
 const submit = () => {
-    form.post(store().url)
+    form.submit()
 }
 
 </script>
@@ -201,6 +201,8 @@ const submit = () => {
             <div class="form-section">
                 <h2>Kontaktne udaje</h2>
 
+                <p v-if="form.validating">Validating...</p>
+
                 <div class="form-group">
                     <label for="email">Email *</label>
                     <input
@@ -209,8 +211,9 @@ const submit = () => {
                         type="email"
                         required
                         placeholder="vas@email.sk"
+                        @change="form.validate('email')"
                     />
-                    <span v-if="form.errors.email" class="error">{{ form.errors.email }}</span>
+                    <span v-if="form.errors.email || form.invalid('email')" class="error">{{ form.errors.email }}</span>
                 </div>
 
                 <div class="form-group">
@@ -219,7 +222,8 @@ const submit = () => {
                         id="phone"
                         v-model="form.phone"
                         type="tel"
-                        placeholder="+421 XXX XXX XXX"
+                        placeholder="+421 XXX XXX XXX alebo bez predvolby"
+                        @change="form.validate('phone')"
                     />
                     <span v-if="form.errors.phone" class="error">{{ form.errors.phone }}</span>
                 </div>

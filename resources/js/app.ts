@@ -3,7 +3,7 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
-import { createApp, h } from 'vue';
+import { createSSRApp, h } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -17,7 +17,7 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        createSSRApp({ render: () => h(App, props) })
             .use(plugin)
             .mount(el);
     },

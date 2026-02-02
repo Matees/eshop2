@@ -31,6 +31,7 @@ class CartService
         }
 
         $this->saveCart($cart);
+
         return true;
     }
 

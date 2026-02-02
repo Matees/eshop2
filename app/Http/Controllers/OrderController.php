@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Cart\CartService;
 use App\Http\Requests\StoreOrderRequest;
+use App\Models\Address;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -27,12 +30,24 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreOrderRequest $storeOrderRequest)
+    public function store(StoreOrderRequest $storeOrderRequest, CartService $cartService)
     {
         $validated = $storeOrderRequest->validated();
+        $cart = $cartService->getCart();
 
+        Order::query()->create([
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'address' => new Address(
+                lineOne: $validated['street'].', '.$validated['houseNumber'],
+                lineTwo: $validated['city'],
+                lineThree: $validated['zip'],
+            ),
+            'total' => $cart->getTotal()->asFloat(),
+            'subtotal' => $cart->getSubtotal()->asFloat(),
+        ]);
 
-        return redirect()->back();
+        return redirect()->route('/');
     }
 
     /**

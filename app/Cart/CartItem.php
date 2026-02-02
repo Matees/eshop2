@@ -8,12 +8,11 @@ use App\Models\Product;
 use Riesenia\Cart\CartContext;
 use Riesenia\Cart\CartItemInterface;
 
-class CartItem implements CartItemInterface {
-
+class CartItem implements CartItemInterface
+{
     private float $quantity = 1;
-    public function __construct(private string $id, private string $name, private float $price, private float $taxRate)
-    {
-    }
+
+    public function __construct(private string $id, private string $name, private float $price, private float $taxRate) {}
 
     public function getCartId(): string
     {
@@ -55,7 +54,8 @@ class CartItem implements CartItemInterface {
         return (float) $this->taxRate;
     }
 
-    public static function createFromProduct(Product $product): self {
+    public static function createFromProduct(Product $product): self
+    {
         return new self((string) $product->id, $product->name, (float) $product->price, (float) $product->tax_rate);
     }
 }

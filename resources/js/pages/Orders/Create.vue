@@ -7,18 +7,17 @@ import { store } from '@/actions/App/Http/Controllers/OrderController'
 interface City {
     name: string
     placeId: string
-    postcode: string
-    display_name: string
+    postalCode: string
 }
 
 interface Street {
     name: string
-    postcode: string
 }
 
 interface Address {
     streetNumber: string
-    postcode: string
+    postalCode: string
+    placeId: string
 }
 
 const form = useForm({
@@ -115,7 +114,7 @@ const selectCity = (city: City) => {
     cityQuery.value = city.name
     showCityDropdown.value = false
 
-    form.zip = city.postcode
+    form.zip = city.postalCode
 
     form.street = ''
     streetQuery.value = ''
@@ -124,6 +123,9 @@ const selectCity = (city: City) => {
     form.houseNumber = ''
     houseNumberQuery.value = ''
     addresses.value = []
+
+    form.validate('city')
+    form.validate('zip')
 }
 
 const selectStreet = (street: Street) => {
@@ -135,13 +137,15 @@ const selectStreet = (street: Street) => {
     houseNumberQuery.value = ''
     addresses.value = []
 
-        form.zip = street.postcode
+    form.validate('street')
 }
 
 const selectAddress = (address: Address) => {
     form.houseNumber = address.streetNumber
     houseNumberQuery.value = address.streetNumber
     showAddressDropdown.value = false
+
+    form.validate('houseNumber')
 }
 
 watch(cityQuery, (newValue) => {
@@ -151,8 +155,8 @@ watch(cityQuery, (newValue) => {
         return
     }
 
-    form.city = ''
-    form.zip = ''
+    // form.city = ''
+    // form.zip = ''
 
     cityDebounce = setTimeout(() => {
         searchCities(newValue)
@@ -166,7 +170,7 @@ watch(streetQuery, (newValue) => {
         return
     }
 
-    form.street = newValue
+    // form.street = newValue
 
     streetDebounce = setTimeout(() => {
         searchStreets(newValue)
@@ -249,10 +253,11 @@ const submit = () => {
                         <li
                             v-for="city in cities"
                             :key="city.name"
+                            class="dropdown-item"
                             @mousedown="selectCity(city)"
                         >
-                            {{ city.name }}
-                            <span v-if="city.postcode" class="postcode">({{ city.postcode }})</span>
+                            <span class="dropdown-item-main">{{ city.name }}</span>
+                            <span v-if="city.postcode" class="dropdown-item-secondary">{{ city.postcode }}</span>
                         </li>
                     </ul>
                     <span v-if="form.errors.city" class="error">{{ form.errors.city }}</span>
@@ -276,10 +281,11 @@ const submit = () => {
                         <li
                             v-for="street in streets"
                             :key="street.name"
+                            class="dropdown-item"
                             @mousedown="selectStreet(street)"
                         >
-                            {{ street.name }}
-                            <span v-if="street.postcode" class="postcode">({{ street.postcode }})</span>
+                            <span class="dropdown-item-main">{{ street.name }}</span>
+                            <span v-if="street.postcode" class="dropdown-item-secondary">{{ street.postcode }}</span>
                         </li>
                     </ul>
                     <span v-if="form.errors.street" class="error">{{ form.errors.street }}</span>
@@ -303,10 +309,11 @@ const submit = () => {
                         <li
                             v-for="address in addresses"
                             :key="address.streetNumber"
+                            class="dropdown-item"
                             @mousedown="selectAddress(address)"
                         >
-                            {{ address.streetNumber }}
-                            <span v-if="address.postcode" class="postcode">({{ address.postcode }})</span>
+                            <span class="dropdown-item-main">{{ address.streetNumber }}</span>
+                            <span v-if="address.postcode" class="dropdown-item-secondary">{{ address.postcode }}</span>
                         </li>
                     </ul>
                     <span v-if="form.errors.houseNumber" class="error">{{ form.errors.houseNumber }}</span>
@@ -321,6 +328,7 @@ const submit = () => {
                         required
                         placeholder="XXX XX"
                         :class="{ 'auto-filled': form.zip }"
+                        @change="form.validate('zip')"
                     />
                     <span v-if="form.errors.zip" class="error">{{ form.errors.zip }}</span>
                 </div>
@@ -406,27 +414,48 @@ const submit = () => {
     background: white;
     border: 1px solid #ddd;
     border-top: none;
-    border-radius: 0 0 4px 4px;
-    max-height: 200px;
+    border-radius: 0 0 8px 8px;
+    max-height: 280px;
     overflow-y: auto;
     z-index: 100;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0.25rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.dropdown li {
-    padding: 0.75rem;
+.dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1rem;
     cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
 }
 
-.dropdown li:hover {
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f7ff;
+}
+
+.dropdown-item-main {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.dropdown-item-secondary {
+    font-size: 0.8rem;
+    color: #888;
     background-color: #f5f5f5;
-}
-
-.dropdown .postcode {
-    color: #666;
-    font-size: 0.875rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    white-space: nowrap;
 }
 
 .loading {

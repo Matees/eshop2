@@ -19,10 +19,10 @@ class ProductFactory extends Factory
     {
         return [
             'name' => $this->faker->word(),
-            'image' => 'https://picsum.photos/640/480?random=' . $this->faker->unique()->randomNumber(),
+            'image' => 'https://picsum.photos/640/480?random='.$this->faker->unique()->randomNumber(),
             'description' => $this->faker->sentence(),
             'price' => 20.00,
-            'tax_rate' => $this->faker->numberBetween( 1,100),
+            'tax_rate' => $this->faker->numberBetween(1, 100),
         ];
     }
 }

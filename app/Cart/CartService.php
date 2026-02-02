@@ -52,7 +52,7 @@ class CartService
 
     public function clearCart(): void
     {
-        $this->getCart()->clear();
+        $this->cart = null;
         session()->forget('cart');
     }
 

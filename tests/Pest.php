@@ -11,6 +11,7 @@
 |
 */
 
+use App\Models\Order;
 use App\Models\Product;
 
 pest()->extend(Tests\TestCase::class)
@@ -51,4 +52,13 @@ function createProduct(array $attributes = []): Product
         'tax_rate' => 20,
         ...$attributes,
     ]);
+}
+
+function createOrder(array $attributes = [])
+{
+    if ($attributes) {
+        return $attributes;
+    }
+
+    return Order::factory()->make();
 }

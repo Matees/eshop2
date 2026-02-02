@@ -37,7 +37,7 @@ class OrderController extends Controller
 
         $order = Order::query()->create([
             'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'phone' => $validated['phone'] ?? null,
             'address' => new Address(
                 lineOne: $validated['street'].', '.$validated['houseNumber'],
                 lineTwo: $validated['city'],

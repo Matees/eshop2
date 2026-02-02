@@ -50,6 +50,12 @@ class CartService
         return $this->cart;
     }
 
+    public function clearCart(): void
+    {
+        $this->getCart()->clear();
+        session()->forget('cart');
+    }
+
     public function toArray(): array
     {
         $cart = $this->getCart();

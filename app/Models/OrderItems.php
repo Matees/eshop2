@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class OrderItems extends Pivot
 {
+    protected $table = 'order_items';
+
     /**
      * Indicates if the IDs are auto-incrementing.
      *

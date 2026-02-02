@@ -35,7 +35,7 @@ class OrderController extends Controller
         $validated = $storeOrderRequest->validated();
         $cart = $cartService->getCart();
 
-        Order::query()->create([
+        $order = Order::query()->create([
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'address' => new Address(
@@ -47,7 +47,20 @@ class OrderController extends Controller
             'subtotal' => $cart->getSubtotal()->asFloat(),
         ]);
 
-        return redirect()->route('/');
+        $items = [];
+        foreach ($cart->getItems() as $item) {
+            $items[$item->getCartId()] = [
+                'unit_price' => $item->getUnitPrice(),
+                'quantity' => $item->getCartQuantity(),
+                'tax_rate' => $item->getTaxRate(),
+                'total' => $cart->getItemPrice($item, $item->getCartQuantity(), true)->asFloat(),
+            ];
+        }
+        $order->products()->attach($items);
+
+        $cartService->clearCart();
+
+        return redirect('/');
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Cart\CartItem;
-use App\Cart\CartService;
+use App\Cart\Contracts\CartInterface;
 use App\Enums\FlashType;
 use App\Http\Requests\StoreCartItemRequest;
 use App\Models\Product;
@@ -19,12 +19,12 @@ class CartController extends Controller
     /**
      * Add Product to cart.
      */
-    public function add(int $itemId, StoreCartItemRequest $request, CartService $cartService)
+    public function add(int $itemId, StoreCartItemRequest $request, CartInterface $cart)
     {
         $product = Product::query()->findOrFail($itemId);
         $quantity = $request->integer('quantity', 1);
 
-        $cartService->addItem(CartItem::createFromProduct($product), $quantity);
+        $cart->add(CartItem::createFromProduct($product), $quantity);
 
         return redirect()->back()->with(FlashType::Success->value, 'Položka pridaná');
     }
@@ -32,9 +32,9 @@ class CartController extends Controller
     /**
      * Remove Product from cart.
      */
-    public function remove(int $itemId, CartService $cartService)
+    public function remove(int $itemId, CartInterface $cart)
     {
-        $removed = $cartService->removeItem((string) $itemId);
+        $removed = $cart->remove((string) $itemId);
 
         if ($removed) {
             return redirect()->back()->with(FlashType::Success->value, 'Položka zmazaná');

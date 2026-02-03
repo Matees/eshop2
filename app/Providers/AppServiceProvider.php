@@ -2,7 +2,8 @@
 
 namespace App\Providers;
 
-use App\Cart\CartService;
+use App\Cart\CartRiesenieService;
+use App\Cart\Contracts\CartInterface;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->scoped(CartService::class);
+        $this->app->scoped(CartInterface::class, CartRiesenieService::class);
     }
 
     /**

@@ -11,6 +11,7 @@ class OrderItems extends Pivot
 {
     /** @use HasFactory<OrderItemsFactory> */
     use HasFactory;
+
     protected $table = 'order_items';
 
     /**

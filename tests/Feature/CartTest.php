@@ -1,9 +1,10 @@
 <?php
 
-use App\Cart\CartService;
+use App\Cart\Contracts\CartInterface;
+use App\Cart\DTO\CartData;
 
 beforeEach(function () {
-    $this->cartService = app(CartService::class);
+    $this->cartService = app(CartInterface::class);
 });
 
 test('can add item to cart', function (int $quantity) {
@@ -15,12 +16,12 @@ test('can add item to cart', function (int $quantity) {
 
     $response->assertRedirect();
 
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
-    expect($cart['itemCount'])->toBe(1)
-        ->and($cart['items'][$product->id]['name'])->toBe('Test Product')
-        ->and($cart['items'][$product->id]['quantity'])->toBe((float) $quantity)
-        ->and($cart['items'][$product->id]['unitPrice'])->toBe($product->price);
+    expect($cart->itemCount)->toBe(1)
+        ->and($cart->items[$product->id]->name)->toBe('Test Product')
+        ->and($cart->items[$product->id]->quantity)->toBe((float) $quantity)
+        ->and($cart->items[$product->id]->unitPrice)->toBe($product->price);
 })->with([1, 2, 5, 10]);
 
 test('can increase count of existing item', function (int $quantity) {
@@ -34,9 +35,9 @@ test('can increase count of existing item', function (int $quantity) {
         'quantity' => $quantity,
     ]);
 
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
-    expect($cart['items'][$product->id]['quantity'])->toBe((float) ($quantity * 2));
+    expect($cart->items[$product->id]->quantity)->toBe((float) ($quantity * 2));
 })->with([1, 2, 5, 10]);
 
 test('cannot add non-existing product', function () {
@@ -58,14 +59,14 @@ test('can add multiple items', function (int $quantity) {
         'quantity' => $quantity,
     ]);
 
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
     $totalPrice = (($product->price * $quantity) * (1 + ($product->tax_rate / 100))) + (($product2->price * $quantity) * (1 + ($product2->tax_rate / 100)));
 
-    expect($cart['itemCount'])->toBe(2)
-        ->and($cart['items'][$product->id]['quantity'])->toBe((float) $quantity)
-        ->and($cart['items'][$product2->id]['quantity'])->toBe((float) $quantity)
-        ->and($cart['total'])->toBe($totalPrice);
+    expect($cart->itemCount)->toBe(2)
+        ->and($cart->items[$product->id]->quantity)->toBe((float) $quantity)
+        ->and($cart->items[$product2->id]->quantity)->toBe((float) $quantity)
+        ->and($cart->total)->toBe($totalPrice);
 })->with([1, 2, 5, 10]);
 
 test('can add item without quantity', function () {
@@ -73,17 +74,17 @@ test('can add item without quantity', function () {
 
     $this->post(route('cart.add', $product->id));
 
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
-    expect($cart['items'][1]['quantity'])->toBe(1.0);
+    expect($cart->items[$product->id]->quantity)->toBe(1.0);
 });
 
 test('cart is empty', function () {
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
-    expect($cart['itemCount'])->toBe(0)
-        ->and($cart['items'])->toBe([])
-        ->and($cart['total'])->toBe(0.0);
+    expect($cart->itemCount)->toBe(0)
+        ->and($cart->items)->toBe([])
+        ->and($cart->total)->toBe(0.0);
 });
 
 test('cannot add item with zero quantity', function (int $quantity) {
@@ -102,9 +103,9 @@ test('can remove item from cart', function () {
     $this->post(route('cart.add', $product->id));
     $this->delete(route('cart.remove', $product->id));
 
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
-    expect($cart['itemCount'])->toBe(0);
+    expect($cart->itemCount)->toBe(0);
 });
 
 test('cannotnet remove item that is not in cart', function () {
@@ -113,10 +114,9 @@ test('cannotnet remove item that is not in cart', function () {
     $response = $this->delete(route('cart.remove', $product->id));
 
     $response->assertSessionHas('warning');
-    expect($this->cartService->toArray()['itemCount'])->toBe(0);
+    expect(CartData::fromCart($this->cartService)->itemCount)->toBe(0);
 });
 
-// Čiastočné odstránenie (ak podporuješ)
 test('removing one item keeps others', function () {
     $product1 = createProduct();
     $product2 = createProduct();
@@ -125,8 +125,8 @@ test('removing one item keeps others', function () {
     $this->post(route('cart.add', $product2->id), ['quantity' => 1]);
     $this->delete(route('cart.remove', $product1->id));
 
-    $cart = $this->cartService->toArray();
+    $cart = CartData::fromCart($this->cartService);
 
-    expect($cart['itemCount'])->toBe(1)
-        ->and($cart['items'][$product2->id])->not->toBeNull();
+    expect($cart->itemCount)->toBe(1)
+        ->and($cart->items[$product2->id])->not->toBeNull();
 });

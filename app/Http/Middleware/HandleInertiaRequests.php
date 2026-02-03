@@ -2,7 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Cart\CartService;
+use App\Cart\Contracts\CartInterface;
+use App\Cart\DTO\CartData;
 use App\Enums\FlashType;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -42,7 +43,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'cart' => fn () => app(CartService::class)->toArray(),
+            'cart' => fn () => CartData::fromCart(app(CartInterface::class)),
             'flash' => [
                 FlashType::Success->value => fn () => $request->session()->get(FlashType::Success->value),
                 FlashType::Error->value => fn () => $request->session()->get(FlashType::Error->value),

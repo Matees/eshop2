@@ -1,10 +1,10 @@
 <?php
 
-use App\Cart\CartService;
+use App\Cart\Contracts\CartInterface;
 use App\Models\Order;
 
 beforeEach(function () {
-    $this->cartService = app(CartService::class);
+    $this->cartService = app(CartInterface::class);
 });
 
 test('can create order', function () {
@@ -68,8 +68,7 @@ test('cart is cleared after order creation', function () {
 
     $this->post(route('orders.store'), $order);
 
-    // Get fresh CartService instance to check session state
-    expect($this->cartService->getCart()->countItems())->toBe(0);
+    expect(count($this->cartService->getItems()))->toBe(0);
 });
 
 test('order total matches cart total', function () {
@@ -84,7 +83,7 @@ test('order total matches cart total', function () {
 
     $this->post(route('cart.add', $product->id), ['quantity' => 2]);
 
-    $cartTotal = $this->cartService->toArray()['total'];
+    $cartTotal = $this->cartService->getTotal();
 
     $this->post(route('orders.store'), $order);
 

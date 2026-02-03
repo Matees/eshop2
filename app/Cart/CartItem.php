@@ -4,58 +4,51 @@ declare(strict_types=1);
 
 namespace App\Cart;
 
+use App\Cart\Contracts\CartItemInterface;
 use App\Models\Product;
-use Riesenia\Cart\CartContext;
-use Riesenia\Cart\CartItemInterface;
 
 class CartItem implements CartItemInterface
 {
-    private float $quantity = 1;
+    public function __construct(
+        private readonly string $id,
+        private readonly string $name,
+        private readonly float $price,
+        private readonly float $taxRate,
+        private float $quantity = 1
+    ) {}
 
-    public function __construct(private string $id, private string $name, private float $price, private float $taxRate) {}
+    public static function createFromProduct(Product $product): self
+    {
+        return new self((string) $product->id, $product->name, (float) $product->price, (float) $product->tax_rate);
+    }
 
-    public function getCartId(): string
+    public function getId(): string
     {
         return $this->id;
     }
 
-    public function getCartType(): string
-    {
-        return 'product';
-    }
-
-    public function getCartName(): string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setCartContext(CartContext $context): void
-    {
-        // TODO: Implement setCartContext() method.
-    }
-
-    public function setCartQuantity(float $quantity): void
+    public function setQuantity(float $quantity): void
     {
         $this->quantity = $quantity;
     }
 
-    public function getCartQuantity(): float
+    public function getQuantity(): float
     {
         return $this->quantity;
     }
 
     public function getUnitPrice(): float
     {
-        return (float) $this->price;
+        return $this->price;
     }
 
     public function getTaxRate(): float
     {
-        return (float) $this->taxRate;
-    }
-
-    public static function createFromProduct(Product $product): self
-    {
-        return new self((string) $product->id, $product->name, (float) $product->price, (float) $product->tax_rate);
+        return $this->taxRate;
     }
 }

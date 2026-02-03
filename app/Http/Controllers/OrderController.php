@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Cart\CartService;
+use App\Cart\Contracts\CartInterface;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Address;
 use App\Models\Order;
@@ -30,10 +30,9 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreOrderRequest $storeOrderRequest, CartService $cartService)
+    public function store(StoreOrderRequest $storeOrderRequest, CartInterface $cart)
     {
         $validated = $storeOrderRequest->validated();
-        $cart = $cartService->getCart();
 
         $order = Order::query()->create([
             'email' => $validated['email'],
@@ -43,22 +42,22 @@ class OrderController extends Controller
                 lineTwo: $validated['city'],
                 lineThree: $validated['zip'],
             ),
-            'total' => $cart->getTotal()->asFloat(),
-            'subtotal' => $cart->getSubtotal()->asFloat(),
+            'total' => $cart->getTotal(),
+            'subtotal' => $cart->getSubtotal(),
         ]);
 
         $items = [];
         foreach ($cart->getItems() as $item) {
-            $items[$item->getCartId()] = [
+            $items[$item->getId()] = [
                 'unit_price' => $item->getUnitPrice(),
-                'quantity' => $item->getCartQuantity(),
+                'quantity' => $item->getQuantity(),
                 'tax_rate' => $item->getTaxRate(),
-                'total' => $cart->getItemPrice($item, $item->getCartQuantity(), true)->asFloat(),
+                'total' => $cart->getItemPrice($item),
             ];
         }
         $order->products()->attach($items);
 
-        $cartService->clearCart();
+        $cart->clearCart();
 
         return redirect('/');
     }

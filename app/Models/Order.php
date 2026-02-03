@@ -21,6 +21,7 @@ class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
+
     protected $fillable = [
         'email',
         'phone',

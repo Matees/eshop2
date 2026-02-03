@@ -20,6 +20,7 @@ class Product extends Model
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
+    /** @return BelongsToMany<Order, $this, OrderItems, 'pivot'> */
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class)->using(OrderItems::class);

@@ -7,11 +7,13 @@ use App\Cart\Contracts\CartInterface;
 use App\Enums\FlashType;
 use App\Http\Requests\StoreCartItemRequest;
 use App\Models\Product;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class CartController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
         return Inertia::render('Cart/Index');
     }
@@ -19,7 +21,7 @@ class CartController extends Controller
     /**
      * Add Product to cart.
      */
-    public function add(int $itemId, StoreCartItemRequest $request, CartInterface $cart)
+    public function add(int $itemId, StoreCartItemRequest $request, CartInterface $cart): RedirectResponse
     {
         $product = Product::query()->findOrFail($itemId);
         $quantity = $request->integer('quantity', 1);
@@ -32,7 +34,7 @@ class CartController extends Controller
     /**
      * Remove Product from cart.
      */
-    public function remove(int $itemId, CartInterface $cart)
+    public function remove(int $itemId, CartInterface $cart): RedirectResponse
     {
         $removed = $cart->remove((string) $itemId);
 

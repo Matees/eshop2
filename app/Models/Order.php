@@ -30,10 +30,12 @@ class Order extends Model
         'subtotal',
     ];
 
+    /** @var array<string, class-string> */
     protected $casts = [
         'address' => AddressCast::class,
     ];
 
+    /** @return BelongsToMany<Product, $this, OrderItems, 'pivot'> */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'order_items')

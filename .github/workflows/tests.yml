@@ -3,49 +3,50 @@ name: tests
 on:
   push:
     branches:
-#      - develop
+      - develop
       - main
-#  pull_request:
-#    branches:
-#      - develop
-#      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
 
 jobs:
-  ci:
+  tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.3', '8.4']
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
-          tools: composer:v2
+          php-version: '8.4'
           coverage: xdebug
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: node-modules-
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
           path: vendor
-          key: composer-${{ matrix.php-version }}-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-${{ matrix.php-version }}-
-
-      - name: Install Node Dependencies
-        run: npm i
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: |
+          composer install --no-interaction --prefer-dist
+          npm install
 
       - name: Copy Environment File
         run: cp .env.example .env

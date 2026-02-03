@@ -21,11 +21,13 @@ class OrderItems extends Pivot
      */
     public $incrementing = true;
 
+    /** @return BelongsTo<Order, $this> */
     public function orders(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function products(): BelongsTo
     {
         return $this->belongsTo(Product::class);

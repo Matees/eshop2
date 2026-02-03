@@ -20,10 +20,18 @@ class CartRiesenieService implements CartInterface
 
     public function getCart(): Cart
     {
-        if ($this->cart === null) {
-            $data = session('cart');
-            $this->cart = $data ? unserialize($data) : new Cart;
+        if ($this->cart !== null) {
+            return $this->cart;
         }
+
+        $data = session('cart');
+        if (is_string($data) && ($unserialized = unserialize($data)) instanceof Cart) {
+            $this->cart = $unserialized;
+
+            return $this->cart;
+        }
+
+        $this->cart = new Cart;
 
         return $this->cart;
     }
@@ -83,7 +91,7 @@ class CartRiesenieService implements CartInterface
         }, $this->getCart()->getItems());
     }
 
-    public function getItemPrice(CartItemInterface $item, $withVat = true): float
+    public function getItemPrice(CartItemInterface $item, bool $withVat = true): float
     {
         return $this->getCart()->getItemPrice(new RieseniaCartItemAdapter($item), pricesWithVat: $withVat)->asFloat();
     }

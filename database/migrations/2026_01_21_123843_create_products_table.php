@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('image');
             $table->text('description');
             $table->decimal('price');
+            $table->decimal('price_with_vat')->storedAs('ROUND(price * (1 + tax_rate / 100), 2)')->index();
             $table->decimal('tax_rate');
             $table->timestamps();
         });

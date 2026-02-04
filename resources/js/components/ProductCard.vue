@@ -42,7 +42,7 @@ const addToCart = () => {
         </p>
         <p class="total-price">
             <span>Cena s DPH: </span>
-            <strong>{{ product.price * (1 + product.tax_rate / 100) }} €</strong>
+            <strong>{{ product.price_with_vat }} €</strong>
         </p>
 
         <cart-icon :product-id="product.id"></cart-icon>

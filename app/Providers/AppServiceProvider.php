@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Address\Clients\SwiftyperAddressClient;
+use App\Address\Contracts\AddressClientInterface;
 use App\Cart\CartRiesenieService;
 use App\Cart\Contracts\CartInterface;
 use Carbon\CarbonImmutable;
@@ -18,6 +20,15 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(CartInterface::class, CartRiesenieService::class);
+
+        $this->app->singleton(AddressClientInterface::class, function () {
+            /** @var string $apiKey */
+            $apiKey = config('services.swiftyper.api_key');
+
+            return new SwiftyperAddressClient(
+                apiKey: $apiKey,
+            );
+        });
     }
 
     /**

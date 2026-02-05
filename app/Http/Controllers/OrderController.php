@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Cart\Contracts\CartInterface;
+use App\Enums\FlashType;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Address;
 use App\Models\Order;
@@ -61,7 +62,7 @@ class OrderController extends Controller
 
         $cart->clearCart();
 
-        return redirect('/');
+        return redirect('/')->with(FlashType::Success->value, 'Objednavka bola vytvorena');
     }
 
     /**

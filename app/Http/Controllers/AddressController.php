@@ -2,55 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Address\Contracts\AddressClientInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 
 class AddressController extends Controller
 {
     private const int PLACES_QUERY_TTL = 3600;
 
-    private const string SWIFTTYPER_QUERY_URL = 'https://api.swiftyper.sk/v1/places/query';
+    public function __construct(
+        private readonly AddressClientInterface $addressClient,
+    ) {}
 
     public function cities(Request $request): JsonResponse
     {
+        /** @var string $query */
         $query = $request->get('q', '');
 
         $cacheKey = 'cities_'.md5($query);
 
-        /** @var array<int, array<string, ?string>> $cities */
+        /** @var array<int, array<string, mixed>> $cities */
         $cities = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($query) {
-            $response = Http::withHeaders([
-                'X-Swiftyper-API-Key' => config('services.swiftyper.api_key'),
-            ])->post(self::SWIFTTYPER_QUERY_URL, [
-                'query' => $query,
-                'country' => ['SK'],
-            ]);
-
-            if (! $response->successful()) {
-                return [];
-            }
-
-            /** @var array<int, mixed> $data */
-            $data = $response->json();
-
-            return collect($data)
-                ->filter(fn ($item) => isset($item['municipality']))
-                ->map(function ($item) {
-                    $name = $item['municipality'] ?? null;
-
-                    return [
-                        'name' => $name,
-                        'placeId' => $item['place_id'],
-                        'postalCode' => $item['postal_code'],
-                        'lat' => $item['latlng']['lat'],
-                        'lon' => $item['latlng']['lng'],
-                    ];
-                })
-                ->filter(fn ($item) => $item['name'] !== null)
-                ->unique('name')
-                ->values();
+            return array_map(
+                fn ($city) => $city->toArray(),
+                $this->addressClient->searchCities($query)
+            );
         });
 
         return response()->json($cities);
@@ -58,7 +35,9 @@ class AddressController extends Controller
 
     public function streets(Request $request): JsonResponse
     {
+        /** @var string $query */
         $query = $request->get('q', '');
+        /** @var string $municipality */
         $municipality = $request->get('municipality', '');
 
         if ($municipality === '') {
@@ -69,26 +48,10 @@ class AddressController extends Controller
 
         /** @var array<int, array<string, string>> $streets */
         $streets = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($query, $municipality) {
-            $response = Http::withHeaders([
-                'X-Swiftyper-API-Key' => config('services.swiftyper.api_key'),
-            ])->post(self::SWIFTTYPER_QUERY_URL, [
-                'query' => $query,
-                'municipality' => $municipality,
-                'country' => ['SK'],
-            ]);
-
-            if (! $response->successful()) {
-                return [];
-            }
-
-            /** @var array<int, mixed> $data */
-            $data = $response->json();
-
-            return collect($data)
-                ->filter(fn ($item) => isset($item['street']))
-                ->map(fn ($item) => ['name' => $item['street']])
-                ->unique('name')
-                ->values();
+            return array_map(
+                fn ($street) => $street->toArray(),
+                $this->addressClient->searchStreets($query, $municipality)
+            );
         });
 
         return response()->json($streets);
@@ -96,51 +59,25 @@ class AddressController extends Controller
 
     public function addresses(Request $request): JsonResponse
     {
+        /** @var string $query */
         $query = $request->get('q', '');
+        /** @var string $street */
         $street = $request->get('street', '');
+        /** @var string $municipality */
         $municipality = $request->get('municipality', '');
 
         if (strlen($municipality) < 2 || strlen($street) < 1) {
             return response()->json([]);
         }
 
-        $searchQuery = $query ? "$street $query" : $street;
-        $cacheKey = 'addresses_'.md5($searchQuery.'_'.$municipality);
+        $cacheKey = 'addresses_'.md5($query.'_'.$street.'_'.$municipality);
 
         /** @var array<int, array<string, ?string>> $addresses */
-        $addresses = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($searchQuery, $municipality) {
-            $response = Http::withHeaders([
-                'X-Swiftyper-API-Key' => config('services.swiftyper.api_key'),
-            ])->post(self::SWIFTTYPER_QUERY_URL, [
-                'query' => $searchQuery,
-                'municipality' => $municipality,
-                'country' => ['SK'],
-                'limit' => 15,
-            ]);
-
-            if (! $response->successful()) {
-                return [];
-            }
-
-            /** @var array<int, mixed> $data */
-            $data = $response->json();
-
-            return collect($data)
-                ->filter(fn ($item) => isset($item['street']) && (isset($item['street_number']) || isset($item['building_number'])))
-                ->map(function ($item) {
-                    $number = $item['building_number'] ?? $item['street_number'] ?? '';
-                    if (isset($item['building_number']) && isset($item['street_number'])) {
-                        $number = $item['street_number'].'/'.$item['building_number'];
-                    }
-
-                    return [
-                        'streetNumber' => $number,
-                        'postalCode' => $item['postal_code'] ?? null,
-                        'placeId' => $item['place_id'] ?? null,
-                    ];
-                })
-                ->unique('streetNumber')
-                ->values();
+        $addresses = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($query, $street, $municipality) {
+            return array_map(
+                fn ($address) => $address->toArray(),
+                $this->addressClient->searchAddresses($query, $street, $municipality)
+            );
         });
 
         return response()->json($addresses);

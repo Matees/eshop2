@@ -11,16 +11,6 @@ final readonly class StreetResult
     ) {}
 
     /**
-     * @param  array<string, mixed>  $data
-     */
-    public static function fromApiResponse(array $data): self
-    {
-        return new self(
-            name: $data['street'],
-        );
-    }
-
-    /**
      * @return array<string, string>
      */
     public function toArray(): array

@@ -22,12 +22,8 @@ class AddressController extends Controller
 
         $cacheKey = 'cities_'.md5($query);
 
-        /** @var array<int, array<string, mixed>> $cities */
         $cities = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($query) {
-            return array_map(
-                fn ($city) => $city->toArray(),
-                $this->addressClient->searchCities($query)
-            );
+            return $this->addressClient->searchCities($query);
         });
 
         return response()->json($cities);
@@ -41,17 +37,13 @@ class AddressController extends Controller
         $municipality = $request->get('municipality', '');
 
         if ($municipality === '') {
-            return response()->json([]);
+            return response()->json();
         }
 
         $cacheKey = 'streets_'.md5($query.'_'.$municipality);
 
-        /** @var array<int, array<string, string>> $streets */
         $streets = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($query, $municipality) {
-            return array_map(
-                fn ($street) => $street->toArray(),
-                $this->addressClient->searchStreets($query, $municipality)
-            );
+            return $this->addressClient->searchStreets($query, $municipality);
         });
 
         return response()->json($streets);
@@ -67,17 +59,14 @@ class AddressController extends Controller
         $municipality = $request->get('municipality', '');
 
         if (strlen($municipality) < 2 || strlen($street) < 1) {
-            return response()->json([]);
+            return response()->json();
         }
 
         $cacheKey = 'addresses_'.md5($query.'_'.$street.'_'.$municipality);
 
         /** @var array<int, array<string, ?string>> $addresses */
         $addresses = Cache::remember($cacheKey, self::PLACES_QUERY_TTL, function () use ($query, $street, $municipality) {
-            return array_map(
-                fn ($address) => $address->toArray(),
-                $this->addressClient->searchAddresses($query, $street, $municipality)
-            );
+            return $this->addressClient->searchAddresses($query, $street, $municipality);
         });
 
         return response()->json($addresses);

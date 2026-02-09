@@ -8,8 +8,7 @@ use App\Address\Contracts\AddressClientInterface;
 use App\Address\DTO\AddressResult;
 use App\Address\DTO\CityResult;
 use App\Address\DTO\StreetResult;
-use App\Address\HttpClientFactory;
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 
@@ -19,20 +18,11 @@ final class SwiftyperAddressClient implements AddressClientInterface
 
     private const string DEFAULT_COUNTRY = 'SK';
 
-    private ?Client $httpClient = null;
-
     public function __construct(
         private readonly string $apiKey,
+        private readonly SwiftyperResponseMapper $mapper,
+        private readonly ClientInterface $httpClient,
     ) {}
-
-    private function getHttpClient(): Client
-    {
-        if ($this->httpClient === null) {
-            $this->httpClient = HttpClientFactory::create();
-        }
-
-        return $this->httpClient;
-    }
 
     /**
      * @return array<CityResult>
@@ -44,12 +34,7 @@ final class SwiftyperAddressClient implements AddressClientInterface
             'country' => [self::DEFAULT_COUNTRY],
         ]);
 
-        return collect($data)
-            ->filter(fn (array $item): bool => isset($item['municipality']))
-            ->map(fn (array $item): CityResult => CityResult::fromApiResponse($item))
-            ->unique('name')
-            ->values()
-            ->all();
+        return $this->mapper->mapCities($data);
     }
 
     /**
@@ -63,12 +48,7 @@ final class SwiftyperAddressClient implements AddressClientInterface
             'country' => [self::DEFAULT_COUNTRY],
         ]);
 
-        return collect($data)
-            ->filter(fn (array $item): bool => isset($item['street']))
-            ->map(fn (array $item): StreetResult => StreetResult::fromApiResponse($item))
-            ->unique('name')
-            ->values()
-            ->all();
+        return $this->mapper->mapStreets($data);
     }
 
     /**
@@ -82,15 +62,9 @@ final class SwiftyperAddressClient implements AddressClientInterface
             'query' => $searchQuery,
             'municipality' => $municipality,
             'country' => [self::DEFAULT_COUNTRY],
-            'limit' => 15,
         ]);
 
-        return collect($data)
-            ->filter(fn (array $item): bool => AddressResult::hasValidStreetNumber($item))
-            ->map(fn (array $item): AddressResult => AddressResult::fromApiResponse($item))
-            ->unique('streetNumber')
-            ->values()
-            ->all();
+        return $this->mapper->mapAddresses($data);
     }
 
     /**
@@ -100,7 +74,7 @@ final class SwiftyperAddressClient implements AddressClientInterface
     private function fetchData(array $payload): array
     {
         try {
-            $response = $this->getHttpClient()->post(self::API_URL, [
+            $response = $this->httpClient->request('POST', self::API_URL, [
                 'headers' => [
                     'X-Swiftyper-API-Key' => $this->apiKey,
                 ],

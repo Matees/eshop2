@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Address\Clients\SwiftyperAddressClient;
 use App\Address\Contracts\AddressClientInterface;
+use App\Address\HttpClientFactory;
 use App\Cart\CartRiesenieService;
 use App\Cart\Contracts\CartInterface;
+use GuzzleHttp\ClientInterface;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -21,14 +23,15 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->scoped(CartInterface::class, CartRiesenieService::class);
 
-        $this->app->singleton(AddressClientInterface::class, function () {
-            /** @var string $apiKey */
-            $apiKey = config('services.swiftyper.api_key');
+        $this->app->singleton(AddressClientInterface::class, SwiftyperAddressClient::class);
 
-            return new SwiftyperAddressClient(
-                apiKey: $apiKey,
-            );
-        });
+        $this->app->when(SwiftyperAddressClient::class)
+            ->needs('$apiKey')
+            ->giveConfig('services.swiftyper.api_key');
+
+        $this->app->when(SwiftyperAddressClient::class)
+            ->needs(ClientInterface::class)
+            ->give(fn () => HttpClientFactory::create());
     }
 
     /**

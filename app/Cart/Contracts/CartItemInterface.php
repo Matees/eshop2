@@ -6,15 +6,13 @@ namespace App\Cart\Contracts;
 
 interface CartItemInterface
 {
-    public function getId(): string;
+    public string $id { get; }
 
-    public function getName(): string;
+    public string $name { get; }
 
-    public function setQuantity(float $quantity): void;
+    public float $quantity { get; set; }
 
-    public function getQuantity(): float;
+    public float $unitPrice { get; }
 
-    public function getUnitPrice(): float;
-
-    public function getTaxRate(): float;
+    public float $taxRate { get; }
 }

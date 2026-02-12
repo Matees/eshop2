@@ -5,10 +5,10 @@ namespace App\Providers;
 use App\Address\Clients\SwiftyperAddressClient;
 use App\Address\Contracts\AddressClientInterface;
 use App\Address\HttpClientFactory;
-use App\Cart\CartRiesenieService;
 use App\Cart\Contracts\CartInterface;
-use GuzzleHttp\ClientInterface;
+use App\Cart\Riesenia\CartRiesenieService;
 use Carbon\CarbonImmutable;
+use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->when(SwiftyperAddressClient::class)
             ->needs(ClientInterface::class)
             ->give(fn () => HttpClientFactory::create());
+
+        $this->app->when(SwiftyperAddressClient::class)
+            ->needs('$baseUrl')
+            ->give(fn () => config('services.swiftyper.base_url'));
     }
 
     /**

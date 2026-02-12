@@ -9,14 +9,14 @@ export interface CartItem {
     unitPrice: number;
     taxRate: number;
     total: number;
-    subTotal: number;
+    subtotal: number;
 }
 
 export interface Cart {
     items: CartItem[];
     itemCount: number;
     total: number;
-    subTotal: number;
+    subtotal: number;
 }
 
 export interface Flash {

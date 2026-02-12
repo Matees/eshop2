@@ -19,11 +19,11 @@ readonly class CartDataItem
     public static function fromCartItem(CartItemInterface $item): self
     {
         return new self(
-            $item->getId(),
-            $item->getName(),
-            $item->getQuantity(),
-            $item->getUnitPrice(),
-            $item->getTaxRate(),
+            $item->id,
+            $item->name,
+            $item->quantity,
+            $item->unitPrice,
+            $item->taxRate,
         );
     }
 }

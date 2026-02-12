@@ -51,10 +51,10 @@ class OrderController extends Controller
 
         $items = [];
         foreach ($cart->getItems() as $item) {
-            $items[$item->getId()] = [
-                'unit_price' => $item->getUnitPrice(),
-                'quantity' => $item->getQuantity(),
-                'tax_rate' => $item->getTaxRate(),
+            $items[$item->id] = [
+                'unit_price' => $item->unitPrice,
+                'quantity' => $item->quantity,
+                'tax_rate' => $item->taxRate,
                 'total' => $cart->getItemPrice($item),
             ];
         }

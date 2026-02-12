@@ -14,14 +14,13 @@ use JsonException;
 
 final class SwiftyperAddressClient implements AddressClientInterface
 {
-    private const string API_URL = 'https://api.swiftyper.sk/v1/places/query';
-
     private const string DEFAULT_COUNTRY = 'SK';
 
     public function __construct(
         private readonly string $apiKey,
         private readonly SwiftyperResponseMapper $mapper,
         private readonly ClientInterface $httpClient,
+        private readonly string $baseUrl,
     ) {}
 
     /**
@@ -74,7 +73,7 @@ final class SwiftyperAddressClient implements AddressClientInterface
     private function fetchData(array $payload): array
     {
         try {
-            $response = $this->httpClient->request('POST', self::API_URL, [
+            $response = $this->httpClient->request('POST', $this->baseUrl, [
                 'headers' => [
                     'X-Swiftyper-API-Key' => $this->apiKey,
                 ],

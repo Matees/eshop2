@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Cart;
+namespace App\Cart\Riesenia;
 
-use App\Cart\Adapters\RieseniaCartItemAdapter;
+use App\Cart\CartItem;
 use App\Cart\Contracts\CartInterface;
 use App\Cart\Contracts\CartItemInterface;
+use App\Cart\Riesenia\Adapters\RieseniaCartItemAdapter;
 use Riesenia\Cart\Cart;
+use Riesenia\Cart\CartItemInterface as RieseniaCartItemInterface;
 
 class CartRiesenieService implements CartInterface
 {
@@ -18,7 +20,7 @@ class CartRiesenieService implements CartInterface
         session(['cart' => serialize($cart)]);
     }
 
-    public function getCart(): Cart
+    private function getCart(): Cart
     {
         if ($this->cart !== null) {
             return $this->cart;
@@ -78,17 +80,18 @@ class CartRiesenieService implements CartInterface
         return $this->getCart()->getSubtotal()->asFloat();
     }
 
+    /**
+     * @return CartItemInterface[]
+     */
     public function getItems(): array
     {
-        return array_map(function ($rieseniaItem) {
-            return new CartItem(
-                $rieseniaItem->getCartId(),
-                $rieseniaItem->getCartName(),
-                $rieseniaItem->getUnitPrice(),
-                $rieseniaItem->getTaxRate(),
-                $rieseniaItem->getCartQuantity(),
-            );
-        }, $this->getCart()->getItems());
+        return array_map(fn (RieseniaCartItemInterface $rieseniaItem) => new CartItem(
+            id: $rieseniaItem->getCartId(),
+            name: $rieseniaItem->getCartName(),
+            unitPrice: $rieseniaItem->getUnitPrice(),
+            taxRate: $rieseniaItem->getTaxRate(),
+            quantity: $rieseniaItem->getCartQuantity(),
+        ), $this->getCart()->getItems());
     }
 
     public function getItemPrice(CartItemInterface $item, bool $withVat = true): float

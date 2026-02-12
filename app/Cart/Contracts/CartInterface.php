@@ -15,7 +15,7 @@ interface CartInterface
     public function getSubtotal(): float;
 
     /**
-     * @return array<CartItemInterface>
+     * @return CartItemInterface[]
      */
     public function getItems(): array;
 

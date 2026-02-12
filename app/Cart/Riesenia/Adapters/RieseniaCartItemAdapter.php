@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Cart\Adapters;
+namespace App\Cart\Riesenia\Adapters;
 
 use App\Cart\Contracts\CartItemInterface;
 use Riesenia\Cart\CartContext;
@@ -16,7 +16,7 @@ class RieseniaCartItemAdapter implements RieseniaCartItemInterface
 
     public function getCartId(): string
     {
-        return $this->item->getId();
+        return $this->item->id;
     }
 
     public function getCartType(): string
@@ -26,7 +26,7 @@ class RieseniaCartItemAdapter implements RieseniaCartItemInterface
 
     public function getCartName(): string
     {
-        return $this->item->getName();
+        return $this->item->name;
     }
 
     public function setCartContext(CartContext $context): void
@@ -36,21 +36,21 @@ class RieseniaCartItemAdapter implements RieseniaCartItemInterface
 
     public function setCartQuantity(float $quantity): void
     {
-        $this->item->setQuantity($quantity);
+        $this->item->quantity = $quantity;
     }
 
     public function getCartQuantity(): float
     {
-        return $this->item->getQuantity();
+        return $this->item->quantity;
     }
 
     public function getUnitPrice(): float
     {
-        return $this->item->getUnitPrice();
+        return $this->item->unitPrice;
     }
 
     public function getTaxRate(): float
     {
-        return $this->item->getTaxRate();
+        return $this->item->taxRate;
     }
 }

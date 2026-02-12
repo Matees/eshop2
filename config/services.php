@@ -37,6 +37,6 @@ return [
 
     'swiftyper' => [
         'api_key' => env('SWIFTTYPER_TOKEN'),
-
+        'base_url' => env('SWIFTTYPER_API_URL'),
     ],
 ];

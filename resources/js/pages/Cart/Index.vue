@@ -19,22 +19,13 @@ const page = usePage();
 
         <div v-else>
             <div class="cart-items">
-                <div v-for="item in page.props.cart.items" :key="item.cartId" class="cart-item">
+                <div v-for="item in page.props.cart.items" :key="item.id" class="cart-item">
                     <div class="cart-item-info">
                         <p class="cart-item-name">{{ item.name }}</p>
                     </div>
                     <div class="cart-item-quantity">Množstvo: {{ item.quantity }}</div>
-                    <div class="cart-item-total">
-                        <p class="subtotal-price">
-                            <span>Cena bez DPH: </span>
-                            <strong>{{ item.subTotal }} €</strong>
-                        </p>
-                        <p class="total-price">
-                            <span>Cena s DPH: </span>
-                            <strong>{{ item.total }} €</strong>
-                        </p>
-                    </div>
-                    <Link :href="remove(111)"> Odstranit </Link>
+
+                    <Link :href="remove(item.id)"> Odstranit </Link>
                 </div>
             </div>
 
@@ -42,7 +33,7 @@ const page = usePage();
                 <div class="cart-total">
                     <p class="subtotal-price">
                         <span>Cena bez DPH: </span>
-                        <strong>{{ page.props.cart.subTotal }} €</strong>
+                        <strong>{{ page.props.cart.subtotal }} €</strong>
                     </p>
                     <p class="total-price">
                         <span>Cena s DPH: </span>

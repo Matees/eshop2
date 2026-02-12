@@ -22,7 +22,7 @@ readonly class CartData
     {
         $items = [];
         foreach ($cart->getItems() as $item) {
-            $items[$item->getId()] = CartDataItem::fromCartItem($item);
+            $items[$item->id] = CartDataItem::fromCartItem($item);
         }
 
         return new self(

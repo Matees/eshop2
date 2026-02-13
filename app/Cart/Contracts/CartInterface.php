@@ -20,6 +20,4 @@ interface CartInterface
     public function getItems(): array;
 
     public function clearCart(): void;
-
-    public function getItemPrice(CartItemInterface $item, bool $withVat = true): float;
 }

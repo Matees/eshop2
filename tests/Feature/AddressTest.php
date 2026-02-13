@@ -22,10 +22,10 @@ test('streets endpoint returns streets', function () {
         ]);
 });
 
-test('streets endpoint returns empty array without municipality', function () {
+test('streets endpoint returns validation error without municipality', function () {
     $this->getJson(route('address.streets', ['q' => 'Šte']))
-        ->assertOk()
-        ->assertJsonCount(0);
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['municipality']);
 });
 
 test('addresses endpoint returns addresses', function () {
@@ -36,10 +36,10 @@ test('addresses endpoint returns addresses', function () {
         ]);
 });
 
-test('addresses endpoint returns empty for missing parameters', function () {
+test('addresses endpoint returns validation error for missing parameters', function () {
     $this->getJson(route('address.addresses', ['q' => '1']))
-        ->assertOk()
-        ->assertJsonCount(0);
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['street', 'municipality']);
 });
 
 test('cities endpoint caches results', function () {

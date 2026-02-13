@@ -20,16 +20,24 @@ class HttpClientFactory
         $handlerStack->push(
             static function (callable $handler) {
                 return static function (RequestInterface $request, array $options) use ($handler) {
-                    //                    Log::debug('logujem pred requestom');
-
                     $start = microtime(true);
 
                     $promise = $handler($request, $options);
 
                     return $promise->then(
-                        static function (ResponseInterface $response) use ($start) {
-                            //                            Log::debug('logujem po requeste');
-                            Log::debug('cas requestu '.(microtime(true) - $start) * 1000 .' ms');
+                        static function (ResponseInterface $response) use ($start, $request) {
+                            $durationMs = round((microtime(true) - $start) * 1000, 2);
+
+                            Log::debug('HTTP request', [
+                                'method' => $request->getMethod(),
+                                'url' => (string) $request->getUri(),
+                                'request_body' => (string) $request->getBody(),
+                                'status' => $response->getStatusCode(),
+                                'response_body' => (string) $response->getBody(),
+                                'duration_ms' => $durationMs,
+                            ]);
+
+                            $response->getBody()->rewind();
 
                             return $response;
                         }

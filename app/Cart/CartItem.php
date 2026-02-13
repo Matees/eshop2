@@ -15,6 +15,7 @@ class CartItem implements CartItemInterface
         public readonly float $unitPrice,
         public readonly float $taxRate,
         public float $quantity = 1,
+        public readonly float $totalPrice = 0,
     ) {}
 
     public static function createFromProduct(Product $product): self

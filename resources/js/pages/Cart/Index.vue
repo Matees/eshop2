@@ -24,7 +24,13 @@ const page = usePage();
                         <p class="cart-item-name">{{ item.name }}</p>
                     </div>
                     <div class="cart-item-quantity">Množstvo: {{ item.quantity }}</div>
+                    <div class="cart-item-total">
+                        <p class="subtotal-price">
+                            <span>Cena bez DPH: </span>
+                            <strong>{{ item.unitPrice }} €</strong>
+                        </p>
 
+                    </div>
                     <Link :href="remove(item.id)"> Odstranit </Link>
                 </div>
             </div>

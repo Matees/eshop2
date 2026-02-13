@@ -85,17 +85,15 @@ class CartRiesenieService implements CartInterface
      */
     public function getItems(): array
     {
+        $cart = $this->getCart();
+
         return array_map(fn (RieseniaCartItemInterface $rieseniaItem) => new CartItem(
             id: $rieseniaItem->getCartId(),
             name: $rieseniaItem->getCartName(),
             unitPrice: $rieseniaItem->getUnitPrice(),
             taxRate: $rieseniaItem->getTaxRate(),
             quantity: $rieseniaItem->getCartQuantity(),
-        ), $this->getCart()->getItems());
-    }
-
-    public function getItemPrice(CartItemInterface $item, bool $withVat = true): float
-    {
-        return $this->getCart()->getItemPrice(new RieseniaCartItemAdapter($item), pricesWithVat: $withVat)->asFloat();
+            totalPrice: $cart->getItemPrice($rieseniaItem)->asFloat(),
+        ), $cart->getItems());
     }
 }

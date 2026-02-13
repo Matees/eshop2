@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Address\Contracts\AddressClientInterface;
+use App\Http\Requests\SearchAddressesRequest;
+use App\Http\Requests\SearchCitiesRequest;
+use App\Http\Requests\SearchStreetsRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class AddressController extends Controller
@@ -15,10 +17,10 @@ class AddressController extends Controller
         private readonly AddressClientInterface $addressClient,
     ) {}
 
-    public function cities(Request $request): JsonResponse
+    public function cities(SearchCitiesRequest $request): JsonResponse
     {
         /** @var string $query */
-        $query = $request->get('q', '');
+        $query = $request->validated('q');
 
         $cacheKey = 'cities_'.md5($query);
 
@@ -29,16 +31,12 @@ class AddressController extends Controller
         return response()->json($cities);
     }
 
-    public function streets(Request $request): JsonResponse
+    public function streets(SearchStreetsRequest $request): JsonResponse
     {
         /** @var string $query */
-        $query = $request->get('q', '');
+        $query = $request->validated('q');
         /** @var string $municipality */
-        $municipality = $request->get('municipality', '');
-
-        if ($municipality === '') {
-            return response()->json();
-        }
+        $municipality = $request->validated('municipality');
 
         $cacheKey = 'streets_'.md5($query.'_'.$municipality);
 
@@ -49,18 +47,14 @@ class AddressController extends Controller
         return response()->json($streets);
     }
 
-    public function addresses(Request $request): JsonResponse
+    public function addresses(SearchAddressesRequest $request): JsonResponse
     {
         /** @var string $query */
-        $query = $request->get('q', '');
+        $query = $request->validated('q');
         /** @var string $street */
-        $street = $request->get('street', '');
+        $street = $request->validated('street');
         /** @var string $municipality */
-        $municipality = $request->get('municipality', '');
-
-        if (strlen($municipality) < 2 || strlen($street) < 1) {
-            return response()->json();
-        }
+        $municipality = $request->validated('municipality');
 
         $cacheKey = 'addresses_'.md5($query.'_'.$street.'_'.$municipality);
 

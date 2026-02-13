@@ -8,34 +8,32 @@ use App\Address\HttpClientFactory;
 use App\Cart\Contracts\CartInterface;
 use App\Cart\Riesenia\CartRiesenieService;
 use Carbon\CarbonImmutable;
-use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Psr\Http\Client\ClientInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /** @var class-string[] */
+    public array $singletons = [
+        CartInterface::class => CartRiesenieService::class,
+    ];
+
     /**
      * Register any application services.
      */
     public function register(): void
     {
-        $this->app->scoped(CartInterface::class, CartRiesenieService::class);
-
+        $this->app->singleton(ClientInterface::class, fn () => HttpClientFactory::create());
         $this->app->singleton(AddressClientInterface::class, SwiftyperAddressClient::class);
 
         $this->app->when(SwiftyperAddressClient::class)
             ->needs('$apiKey')
-            ->giveConfig('services.swiftyper.api_key');
-
-        $this->app->when(SwiftyperAddressClient::class)
-            ->needs(ClientInterface::class)
-            ->give(fn () => HttpClientFactory::create());
-
-        $this->app->when(SwiftyperAddressClient::class)
+            ->giveConfig('services.swiftyper.api_key')
             ->needs('$baseUrl')
-            ->give(fn () => config('services.swiftyper.base_url'));
+            ->giveConfig('services.swiftyper.base_url');
     }
 
     /**

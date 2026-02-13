@@ -8,9 +8,10 @@ use App\Address\Contracts\AddressClientInterface;
 use App\Address\DTO\AddressResult;
 use App\Address\DTO\CityResult;
 use App\Address\DTO\StreetResult;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Psr7\Request;
 use JsonException;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
 
 final class SwiftyperAddressClient implements AddressClientInterface
 {
@@ -73,17 +74,17 @@ final class SwiftyperAddressClient implements AddressClientInterface
     private function fetchData(array $payload): array
     {
         try {
-            $response = $this->httpClient->request('POST', $this->baseUrl, [
-                'headers' => [
-                    'X-Swiftyper-API-Key' => $this->apiKey,
-                ],
-                'json' => $payload,
-            ]);
+            $request = new Request('POST', $this->baseUrl, [
+                'Content-Type' => 'application/json',
+                'X-Swiftyper-API-Key' => $this->apiKey,
+            ], json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+
+            $response = $this->httpClient->sendRequest($request);
 
             if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
                 return json_decode((string) $response->getBody(), true, flags: JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
             }
-        } catch (GuzzleException $e) {
+        } catch (ClientExceptionInterface $e) {
             // TODO doplnit logovanie popripade nejaku logiku
             return [];
         } catch (JsonException $e) {

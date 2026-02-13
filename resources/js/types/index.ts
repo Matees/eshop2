@@ -8,8 +8,6 @@ export interface CartItem {
     quantity: number;
     unitPrice: number;
     taxRate: number;
-    total: number;
-    subtotal: number;
 }
 
 export interface Cart {

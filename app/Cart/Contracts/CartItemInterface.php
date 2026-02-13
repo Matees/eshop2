@@ -15,4 +15,6 @@ interface CartItemInterface
     public float $unitPrice { get; }
 
     public float $taxRate { get; }
+
+    public float $totalPrice { get; }
 }

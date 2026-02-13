@@ -51,6 +51,10 @@ const searchCities = async (query: string) => {
 
     try {
         const response = await fetch(`/api/address/cities?q=${encodeURIComponent(query)}`)
+        if (!response.ok) {
+            cities.value = []
+            return
+        }
         cities.value = await response.json()
         showCityDropdown.value = cities.value.length > 0
     } catch (error) {
@@ -77,6 +81,10 @@ const searchStreets = async (query: string) => {
         const response = await fetch(
             `/api/address/streets?q=${encodeURIComponent(query)}&municipality=${encodeURIComponent(form.city)}`
         )
+        if (!response.ok) {
+            streets.value = []
+            return
+        }
         streets.value = await response.json()
         showStreetDropdown.value = streets.value.length > 0
     } catch (error) {
@@ -99,6 +107,10 @@ const searchAddresses = async (query: string) => {
         const response = await fetch(
             `/api/address/addresses?q=${encodeURIComponent(query)}&street=${encodeURIComponent(form.street)}&municipality=${encodeURIComponent(form.city)}`
         )
+        if (!response.ok) {
+            addresses.value = []
+            return
+        }
         addresses.value = await response.json()
         showAddressDropdown.value = addresses.value.length > 0
     } catch (error) {
@@ -257,7 +269,7 @@ const submit = () => {
                             @mousedown="selectCity(city)"
                         >
                             <span class="dropdown-item-main">{{ city.name }}</span>
-                            <span v-if="city.postcode" class="dropdown-item-secondary">{{ city.postcode }}</span>
+                            <span v-if="city.postalCode" class="dropdown-item-secondary">{{ city.postalCode }}</span>
                         </li>
                     </ul>
                     <span v-if="form.errors.city" class="error">{{ form.errors.city }}</span>
@@ -285,7 +297,6 @@ const submit = () => {
                             @mousedown="selectStreet(street)"
                         >
                             <span class="dropdown-item-main">{{ street.name }}</span>
-                            <span v-if="street.postcode" class="dropdown-item-secondary">{{ street.postcode }}</span>
                         </li>
                     </ul>
                     <span v-if="form.errors.street" class="error">{{ form.errors.street }}</span>
@@ -313,7 +324,6 @@ const submit = () => {
                             @mousedown="selectAddress(address)"
                         >
                             <span class="dropdown-item-main">{{ address.streetNumber }}</span>
-                            <span v-if="address.postcode" class="dropdown-item-secondary">{{ address.postcode }}</span>
                         </li>
                     </ul>
                     <span v-if="form.errors.houseNumber" class="error">{{ form.errors.houseNumber }}</span>

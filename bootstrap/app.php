@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-        ]);
+        ])->redirectGuestsTo('/');
         $middleware->api(append: [
             ForceJsonResponse::class,
         ]);

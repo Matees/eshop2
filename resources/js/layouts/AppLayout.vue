@@ -4,7 +4,8 @@ import { ref, computed, watch } from 'vue';
 
 import CartIcon from '@/components/CartIcon.vue';
 import Toast from '@/components/Toast.vue';
-import { create as home } from '@/routes/login'
+import { index as ordersIndex } from '@/routes/orders'
+import { index as home } from '@/routes/products'
 
 const logout = () => {
     router.post('/logout')
@@ -50,6 +51,9 @@ watch(flash, () => {
                 <div class="flex items-center gap-4">
                     <CartIcon class="mr-2 mt-1" />
                     <template v-if="page.props.auth?.user">
+                        <Link :href="ordersIndex()" class="text-sm text-gray-600 hover:text-gray-900">
+                            Objednavky
+                        </Link>
                         <span class="text-sm text-gray-700">{{ page.props.auth.user.name }}</span>
                         <button @click="logout" class="text-sm text-gray-600 hover:text-gray-900">
                             Odhlasit sa

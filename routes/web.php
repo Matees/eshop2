@@ -19,5 +19,6 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::delete('{id}', [CartController::class, 'remove'])->name('remove');
 });
 Route::resource('orders', OrderController::class)->middleware([HandlePrecognitiveRequests::class])->only(['create', 'store']);
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index')->middleware('auth');
 
 Route::get('/orders/track/{order}', [OrderController::class, 'show'])->name('orders.track')->middleware('signed');

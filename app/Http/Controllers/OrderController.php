@@ -13,6 +13,18 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
+    public function index(): Response
+    {
+        $orders = Order::query()
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return Inertia::render('Orders/Index', [
+            'orders' => $orders,
+        ]);
+    }
+
     public function create(): Response
     {
         return Inertia::render('Orders/Create');

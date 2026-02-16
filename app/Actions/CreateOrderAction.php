@@ -8,6 +8,7 @@ use App\Cart\Contracts\CartInterface;
 use App\Mail\OrderCreated;
 use App\Models\Address;
 use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class CreateOrderAction
@@ -18,6 +19,7 @@ class CreateOrderAction
     public function execute(array $validated, CartInterface $cart): Order
     {
         $order = Order::query()->create([
+            'user_id' => Auth::id(),
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'address' => new Address(

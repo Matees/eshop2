@@ -22,7 +22,7 @@ class OrderController extends Controller
     {
         $action->execute($storeOrderRequest->validated(), $cart);
 
-        return redirect('/')->with(FlashType::Success->value, 'Objednavka bola vytvorena');
+        return redirect(route('products.index'))->with(FlashType::Success->value, 'Objednavka bola vytvorena');
     }
 
     public function show(Order $order): Response

@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [ProductController::class, 'index'])->name('home');
+Route::get('/', [LoginController::class, 'create'])->name('login.create');
+Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 Route::resource('products', ProductController::class)->only(['index', 'show']);
 

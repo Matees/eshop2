@@ -24,7 +24,7 @@ test('can create order', function () {
 
     $response = $this->post(route('orders.store'), $order);
 
-    $response->assertRedirect('/');
+    $response->assertRedirect(route('products.index'));
 
     $this->assertDatabaseHas('orders', [
         'email' => $order['email'],

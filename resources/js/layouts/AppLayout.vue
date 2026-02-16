@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
 import CartIcon from '@/components/CartIcon.vue';
 import Toast from '@/components/Toast.vue';
-import { home } from '@/routes'
+import { create as home } from '@/routes/login'
+
+const logout = () => {
+    router.post('/logout')
+}
 
 const page = usePage()
 
@@ -43,7 +47,18 @@ watch(flash, () => {
                     {{ page.props.name }}
                 </Link>
 
-                <CartIcon class="mr-2 mt-1" />
+                <div class="flex items-center gap-4">
+                    <CartIcon class="mr-2 mt-1" />
+                    <template v-if="page.props.auth?.user">
+                        <span class="text-sm text-gray-700">{{ page.props.auth.user.name }}</span>
+                        <button @click="logout" class="text-sm text-gray-600 hover:text-gray-900">
+                            Odhlasit sa
+                        </button>
+                    </template>
+                    <Link v-else :href="home()" class="text-sm text-gray-600 hover:text-gray-900">
+                        Prihlasit sa
+                    </Link>
+                </div>
             </nav>
         </header>
 

@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 import { remove } from '@/actions/App/Http/Controllers/CartController';
 import { create as createOrder } from '@/actions/App/Http/Controllers/OrderController';
-import { home } from '@/routes';
+import { create as home } from '@/routes/login';
 
 const page = usePage();
 </script>

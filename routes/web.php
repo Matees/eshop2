@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ProductController::class, 'index'])->name('home');
 
-Route::resource('products', ProductController::class);
+Route::resource('products', ProductController::class)->only(['index', 'show']);
 
 Route::prefix('cart')->name('cart.')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('index');
@@ -16,3 +16,5 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::delete('{id}', [CartController::class, 'remove'])->name('remove');
 });
 Route::resource('orders', OrderController::class)->middleware([HandlePrecognitiveRequests::class])->only(['create', 'store']);
+
+Route::get('/orders/track/{order}', [OrderController::class, 'show'])->name('orders.track')->middleware('signed');

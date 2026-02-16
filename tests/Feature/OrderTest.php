@@ -1,7 +1,10 @@
 <?php
 
 use App\Cart\Contracts\CartInterface;
+use App\Mail\OrderCreated;
 use App\Models\Order;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {
     $this->cartService = app(CartInterface::class);
@@ -91,4 +94,60 @@ test('order total matches cart total', function () {
         'email' => 'test@example.com',
         'total' => $cartTotal,
     ]);
+});
+
+test('signed url allows access to order tracking', function () {
+    $product = createProduct();
+    $this->post(route('cart.add', $product->id));
+    $this->post(route('orders.store'), createOrder([
+        'email' => 'test@example.com',
+        'city' => 'Cabaj',
+        'street' => 'Zahradna',
+        'houseNumber' => '752/2',
+        'zip' => '95117',
+    ]));
+
+    $order = Order::query()->first();
+    $signedUrl = URL::signedRoute('orders.track', ['order' => $order->id]);
+
+    $response = $this->get($signedUrl);
+
+    $response->assertOk();
+});
+
+test('unsigned url returns 403 for order tracking', function () {
+    $product = createProduct();
+    $this->post(route('cart.add', $product->id));
+    $this->post(route('orders.store'), createOrder([
+        'email' => 'test@example.com',
+        'city' => 'Cabaj',
+        'street' => 'Zahradna',
+        'houseNumber' => '752/2',
+        'zip' => '95117',
+    ]));
+
+    $order = Order::query()->first();
+
+    $response = $this->get('/orders/track/'.$order->id);
+
+    $response->assertForbidden();
+});
+
+test('order creation sends email via queue', function () {
+    Mail::fake();
+
+    $product = createProduct();
+    $this->post(route('cart.add', $product->id));
+
+    $this->post(route('orders.store'), createOrder([
+        'email' => 'test@example.com',
+        'city' => 'Cabaj',
+        'street' => 'Zahradna',
+        'houseNumber' => '752/2',
+        'zip' => '95117',
+    ]));
+
+    Mail::assertQueued(OrderCreated::class, function (OrderCreated $mail) {
+        return $mail->hasTo('test@example.com');
+    });
 });

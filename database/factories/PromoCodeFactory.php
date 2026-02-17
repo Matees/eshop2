@@ -10,16 +10,29 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PromoCodeFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'code' => $this->faker->regexify('[A-Z]{3}'),
+            'code' => $this->faker->unique()->regexify('[A-Z]{6}'),
+            'discount' => $this->faker->numberBetween(5, 50),
             'used' => false,
-            'expire_at' => $this->faker->dateTime(),
+            'expire_at' => now()->addMonth(),
         ];
+    }
+
+    public function expired(): static
+    {
+        return $this->state(fn () => [
+            'expire_at' => now()->subDay(),
+        ]);
+    }
+
+    public function used(): static
+    {
+        return $this->state(fn () => [
+            'used' => true,
+        ]);
     }
 }

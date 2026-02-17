@@ -8,6 +8,7 @@ use App\Cart\CartItem;
 use App\Cart\Contracts\CartInterface;
 use App\Cart\Contracts\CartItemInterface;
 use App\Cart\Riesenia\Adapters\RieseniaCartItemAdapter;
+use App\Models\PromoCode;
 use Riesenia\Cart\Cart;
 use Riesenia\Cart\CartItemInterface as RieseniaCartItemInterface;
 
@@ -94,6 +95,27 @@ class CartRiesenieService implements CartInterface
             taxRate: $rieseniaItem->getTaxRate(),
             quantity: $rieseniaItem->getCartQuantity(),
             totalPrice: $cart->getItemPrice($rieseniaItem)->asFloat(),
-        ), $cart->getItems());
+        ), $cart->getItems('~discount'));
+    }
+
+    public function applyPromoCode(?PromoCode $promoCode): void
+    {
+        if (! $promoCode) {
+            return;
+        }
+
+        $cart = $this->getCart();
+
+        $cart->setPromotions([new CartRieseniePromoCodePromotion]);
+        $cart->setContext(['discount' => $promoCode->discount]);
+    }
+
+    public function getDiscountAmount(): float
+    {
+        try {
+            return abs($this->getCart()->getItem('promo_discount')->getUnitPrice());
+        } catch (\OutOfBoundsException $e) {
+            return 0;
+        }
     }
 }

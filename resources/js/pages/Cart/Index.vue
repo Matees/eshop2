@@ -6,6 +6,7 @@ import { create as createOrder } from '@/actions/App/Http/Controllers/OrderContr
 import { create as home } from '@/routes/login';
 
 const page = usePage();
+console.log(page.props.cart.items);
 </script>
 
 <template>

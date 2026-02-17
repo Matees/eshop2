@@ -17,6 +17,7 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('index');
     Route::post('{id}', [CartController::class, 'add'])->name('add')->middleware([HandlePrecognitiveRequests::class]);
     Route::delete('{id}', [CartController::class, 'remove'])->name('remove');
+    Route::post('promo-code/verify', [CartController::class, 'verifyPromoCode'])->name('promo-code.verify');
 });
 Route::resource('orders', OrderController::class)->middleware([HandlePrecognitiveRequests::class])->only(['create', 'store']);
 Route::get('/orders', [OrderController::class, 'index'])->name('orders.index')->middleware('auth');

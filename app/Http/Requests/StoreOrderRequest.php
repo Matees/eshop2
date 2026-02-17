@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\PromoCode;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -26,6 +28,35 @@ class StoreOrderRequest extends FormRequest
             'street' => ['required', 'string', 'max:255'],
             'houseNumber' => ['required', 'string', 'max:50'],
             'zip' => ['required', 'string', 'regex:/^\d{3}\s?\d{2}$/'],
+            'promo_code' => ['nullable', 'string'],
+        ];
+    }
+
+    /** @return array<int, \Closure> */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $code = $this->input('promo_code');
+
+                if (! $code) {
+                    return;
+                }
+
+                $promoCode = PromoCode::query()->where('code', $code)->first();
+
+                if (! $promoCode) {
+                    $validator->errors()->add('promo_code', 'Promo kód neexistuje.');
+
+                    return;
+                }
+
+                if (! $promoCode->isValid()) {
+                    $validator->errors()->add('promo_code', 'Promo kód je neplatný alebo už bol použitý.');
+                }
+
+                $this->merge(['promo_code_model' => $promoCode]);
+            },
         ];
     }
 
@@ -43,6 +74,13 @@ class StoreOrderRequest extends FormRequest
             'houseNumber.max' => 'Číslo domu môže mať maximálne 50 znakov.',
             'zip.required' => 'PSČ je povinné.',
             'zip.regex' => 'PSČ musí byť vo formáte XXX XX.',
+            'promo_code.string' => 'Promo kód musí byť text.',
         ];
+    }
+
+    public function getPromoCode(): ?PromoCode
+    {
+        /** @var ?PromoCode */
+        return $this->input('promo_code_model');
     }
 }

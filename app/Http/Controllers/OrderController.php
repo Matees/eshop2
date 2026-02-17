@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CreateOrderAction;
-use App\Cart\Contracts\CartInterface;
 use App\Enums\FlashType;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +16,7 @@ class OrderController extends Controller
     public function index(): Response
     {
         $orders = Order::query()
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->latest()
             ->get();
 
@@ -30,9 +30,9 @@ class OrderController extends Controller
         return Inertia::render('Orders/Create');
     }
 
-    public function store(StoreOrderRequest $storeOrderRequest, CartInterface $cart, CreateOrderAction $action): RedirectResponse
+    public function store(StoreOrderRequest $storeOrderRequest, CreateOrderAction $action): RedirectResponse
     {
-        $action->execute($storeOrderRequest->validated(), $cart);
+        $action->execute($storeOrderRequest->validated(), $storeOrderRequest);
 
         return redirect(route('products.index'))->with(FlashType::Success->value, 'Objednavka bola vytvorena');
     }

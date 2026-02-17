@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3'
+import { useForm, usePage } from '@inertiajs/vue3'
 import { ref, watch } from 'vue'
+
+const page = usePage()
 
 import { store } from '@/actions/App/Http/Controllers/OrderController'
 
@@ -27,7 +29,60 @@ const form = useForm({
     street: '',
     houseNumber: '',
     zip: '',
+    promo_code: '',
 }).withPrecognition(store())
+
+const promoCodeInput = ref('')
+const promoCodeError = ref('')
+const verifyingPromoCode = ref(false)
+const verifiedPromo = ref<{
+    code: string
+    discount: number
+    discount_amount: number
+    total: number
+} | null>(null)
+
+const verifyPromoCode = async () => {
+    if (!promoCodeInput.value) return
+
+    verifyingPromoCode.value = true
+    promoCodeError.value = ''
+
+    try {
+        const response = await fetch('/cart/promo-code/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': decodeURIComponent(
+                    document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? ''
+                ),
+            },
+            body: JSON.stringify({ promo_code: promoCodeInput.value }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok || !data.valid) {
+            promoCodeError.value = data.message ?? 'Promo kód je neplatný.'
+            return
+        }
+
+        verifiedPromo.value = data
+        form.promo_code = data.code
+    } catch {
+        promoCodeError.value = 'Chyba pri overovaní promo kódu.'
+    } finally {
+        verifyingPromoCode.value = false
+    }
+}
+
+const removePromoCode = () => {
+    verifiedPromo.value = null
+    form.promo_code = ''
+    promoCodeInput.value = ''
+    promoCodeError.value = ''
+}
 
 const cityQuery = ref('')
 const streetQuery = ref('')
@@ -344,6 +399,63 @@ const submit = () => {
                 </div>
             </div>
 
+            <div class="form-section">
+                <h2>Promo kod</h2>
+
+                <div v-if="verifiedPromo" class="promo-applied">
+                    <span>Overeny kod: <strong>{{ verifiedPromo.code }}</strong> (-{{ verifiedPromo.discount }}%)</span>
+                    <span class="promo-discount">-{{ verifiedPromo.discount_amount.toFixed(2) }} &euro;</span>
+                    <button type="button" class="promo-remove-btn" @click="removePromoCode">Odstranit</button>
+                </div>
+
+                <div v-else class="form-group promo-group">
+                    <label for="promo_code">Promo kod</label>
+                    <div class="promo-input-row">
+                        <input
+                            id="promo_code"
+                            v-model="promoCodeInput"
+                            type="text"
+                            placeholder="Zadajte promo kod"
+                        />
+                        <button
+                            type="button"
+                            class="promo-apply-btn"
+                            :disabled="verifyingPromoCode || !promoCodeInput"
+                            @click="verifyPromoCode"
+                        >
+                            {{ verifyingPromoCode ? 'Overujem...' : 'Overit' }}
+                        </button>
+                    </div>
+                    <span v-if="promoCodeError" class="error">{{ promoCodeError }}</span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Suhrn objednavky</h2>
+
+                <div class="summary-items">
+                    <div v-for="item in page.props.cart.items" :key="item.id" class="summary-item">
+                        <span class="summary-item-name">{{ item.name }} &times; {{ item.quantity }}</span>
+                        <span class="summary-item-price">{{ (item.unitPrice * item.quantity).toFixed(2) }} &euro;</span>
+                    </div>
+                </div>
+
+                <div class="summary-totals">
+                    <div v-if="verifiedPromo" class="summary-row">
+                        <span>Promo kod ({{ verifiedPromo.code }}, -{{ verifiedPromo.discount }}%)</span>
+                        <span class="promo-discount">-{{ verifiedPromo.discount_amount.toFixed(2) }} &euro;</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Cena bez DPH</span>
+                        <span>{{ page.props.cart.subtotal }} &euro;</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Celkom s DPH</span>
+                        <strong>{{ verifiedPromo ? verifiedPromo.total.toFixed(2) : page.props.cart.total }} &euro;</strong>
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" :disabled="form.processing" class="submit-btn">
                 {{ form.processing ? 'Odosielam...' : 'Odoslat objednavku' }}
             </button>
@@ -500,5 +612,114 @@ const submit = () => {
 .submit-btn:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+.promo-input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.promo-input-row input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.promo-apply-btn {
+    padding: 0.75rem 1.25rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.promo-apply-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.promo-apply-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.promo-applied {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: #e8f5e9;
+    border-radius: 4px;
+}
+
+.promo-discount {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.promo-remove-btn {
+    margin-left: auto;
+    padding: 0.375rem 0.75rem;
+    background: none;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.promo-remove-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.summary-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item-name {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.summary-item-price {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.summary-totals {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 2px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.summary-total {
+    font-size: 1.1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eee;
 }
 </style>
